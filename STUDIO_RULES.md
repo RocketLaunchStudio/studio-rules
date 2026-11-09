@@ -6,26 +6,30 @@ For AI tools working in Rocket Launch Studio repos: cloud sessions, Codex, Curso
 
 The live copy is https://raw.githubusercontent.com/RocketLaunchStudio/studio-rules/main/STUDIO_RULES.md. A `STUDIO_RULES.md` inside a repo is only a backup for when that cannot be fetched, and its being behind is not a failure.
 
+Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-rules.md` or `rules/models.md`, that file's text is a section of this document.
+
 ## How to work
 - Work as autonomously as possible: check the queue and what other sessions hold, then carry the work through yourself.
-- When a choice is yours and easy to undo, make it, state the assumption in one line, and keep going. Ask only when you
-  cannot continue without the answer.
-- A plan is not a question. Before asking, do the reading and checks that could answer it, then ask only what is left.
-  When the person would just pick your recommended option, take it and say so.
-- Do not ask for a fact a tool can check. Ask only for decisions, recommendation first, and batch the questions.
+- Ask only for a decision you cannot continue without, recommendation first, questions batched. A plan is not a question:
+  first do the reading and checks that could answer it, and never ask for a fact a tool can check.
+- When a choice is yours and easy to undo, or the person would just pick your recommended option, take it, state the
+  assumption in one line, and keep going.
 - A plan says where each fact came from: checked this turn (name the command or file), a dated copy (name it and its
-  date), or unverified. Check every fact the first steps depend on before presenting the plan. An unverified fact says
-  why it is unverified and which step will check it.
+  date), or unverified (say why and which step will check it). Check every fact the first steps depend on before
+  presenting the plan.
 - Write a failing test before a fix only when the change's complexity or sensitivity warrants it: logic with several
   paths, a bug that has come back, or anything touching money, sign-in, client data or production data. Prove simple,
   low-risk changes (copy, styling, an obvious one-line fix) with the repo's check or a screenshot instead.
 - When a failure could happen again, file it with a `Pattern:` line and fix it at the strongest level that works: a
-  tool, then a check, then a rule, and a memory note only until one of those exists. Monday planning lists every
-  pattern seen twice, and each gets a fix that week.
+  tool, then a check, then a rule, and a memory note only until one of those exists. Each morning the repeat report
+  lists every pattern seen twice in the last four weeks, from the checks, session history and `Pattern:` lines. The one
+  costing the most gets a fix that day and the rest stay ranked. A pattern that returns after its fix moves up a level.
 - Every agent brief says how that repo's full check runs, copied from the checks skill, and when the agent must report
   progress if it is not finished.
 - Call something fixed, done or shipped only when the same message shows the evidence: output from the project's check
-  run after your last change, a screenshot, or the build number. Say what you did not check.
+  run after your last change, a screenshot, or the build number. Every status claim comes from a command run this turn,
+  not from memory, a log or a note. Say what you did not check, say "unverified" for a fact you could not check,
+  and take no hard-to-undo step on it.
 - For anything judged by looking (layout, styling, a user flow), screenshot the current state before planning, and
   afterwards show a screenshot plus the exact URL or path to open.
 - A design render shows every part by every current ruling, not only the part under review. Before drawing, read the
@@ -47,42 +51,96 @@ The live copy is https://raw.githubusercontent.com/RocketLaunchStudio/studio-rul
   `rules/risk-tiers.md`.
 - Finished Risk A and B work lands on main by itself through `rls-linear land` once its check is green, without waiting
   for "land it".
+- Landing runs in the background and keeps the repo's gate. A Debug build to try a change needs no check. A small Risk A
+  or B fix needs no Linear issue; its commit message is the record.
+- Michael approves Risk C: contacting or charging a client, deleting his photos or video, and until he says
+  otherwise spending his money, public App Store releases and permanently deleting production data.
 - To put a build on Michael's own Mac or iPhone to try, use a Debug build and install (device USB, XcodeBuildMCP or the
   repo's run command), not a release. Public releases (external TestFlight, App Store) stay Risk C.
 
 ## Changing the rules
-- When Michael changes a rule in chat, write it into its file (plugin, CLAUDE.md or skill) before acting on it, add his
-  exact words and the date to `machine/RULES-HISTORY.md` for a rule in this file or the macs skill, record his exact
-  words on every issue it decides with `rls-linear comment`, and say which sessions must restart: a session keeps the
-  text it loaded at start.
-- Agents never make a rule on their own conclusion. His words in chat apply at once. To propose a new or changed rule,
-  ask him in chat right then with the proposed text, the file, why, and your recommendation, so he can approve it at
-  once. Without his yes nothing is written.
-- In a session he is not in, file the proposal on Linear titled "Proposed rule: ..." (Owner Michael, Ask Product call)
-  for the weekly rules review with Monday planning.
-- Existing rules are audited in rounds of up to 30, those without a quote of his first.
-- Dated planning notes (`*_2026-*.md`, `SPEC.md`) are history and evidence, not rules. Rules live in this file, in each
-  repo's files and in the plugins.
+- When Michael changes a rule in chat, it applies at once: write it into its file before acting on it, following
+  `rules/changing-the-rules.md`, and say which sessions must restart.
+- Agents never make a rule on their own conclusion. To propose one, follow the same file.
 
 ## Checks and waiting
 - Each repo's `Gate:` line names its full check.
 - One full check per commit: iterate with the repo's quick or targeted checks and run the full check once, when the
-  change is ready for review. A later step (push hook, pull request, deploy) reuses a green status on that exact commit.
+  change is ready for review, after rebasing on `origin/main`. A later step (push hook, pull request, deploy) reuses a
+  green status on that exact commit.
+- Auto-fix is for failures in your own code. Report an environment failure (a stale design system lock, a queue timeout)
+  in one line and wait it out, never "fix" it by changing code.
 - The queue re-runs once by itself a failure it classes as environment or timeout. Re-run a code failure only after a
   change. File any check whose result flips on the same commit.
 - Waiting means watching. Before a turn ends on a wait (a Mac job, a CI run, a sync, another session), start a
   background watcher that exits on every final result, restart it if it times out, and act on the result. Use the tool's
   own wait (`rls-linear mac-job --resume <id>`, `gh run watch <id> --exit-status`), and a `sleep` loop only where none
-  exists. If you cannot watch, put the id and the next step on the issue with `rls-linear handoff`.
+  exists. If you cannot watch, put the id and the next step on the issue with `rls-linear handoff`. A `rls-linear land` or
+  `mac-job` that its hook moved to the background is its own watcher, so act on the result when it arrives; a subagent or
+  an unattended run is not moved and waits for the result itself.
 - One investigator per shared problem. Before debugging a shared machine or tool (a runner, a gate), look for
   a Linear issue already held for it, and if there is one, send your findings to its holder and post them there instead
   of starting your own investigation.
 
 ## Git: several sessions share each repo
 - Start new work in your own worktree on a `claude/roc-<n>-<topic>` branch made from the latest `origin/main`, never
-  under /tmp. Run `git status` and `git worktree list` first; if a worktree for your topic exists, resume there.
-- `main` moves by fast-forward only. Before pushing, confirm three things: the branch is up to date
-  with `origin/main`, the project's check passes on that exact state (green `mac-gate` / `mac-app` commit status), and
+  under /tmp. Run `git status` and `git worktree list` first; if a worktree for your topic exists, resume there. A small
+  Risk A or B fix with no issue uses `claude/<topic>`, and its `Next:` and `Open:` trailers are its handoff.
+- `main` moves by fast-forward only. Land Risk A or B work with `rls-linear land`, without asking. Its
+  steps, and how a repo that requires a status check lands: `rules/landing.md`.
+- A green Risk A or B merge in the portal or website deploys through the repo's own deploy workflow without asking; then
+  check production.
+- Stop and assess instead of landing if `git log origin/main..HEAD` holds anything but your commits, the main checkout
+  has uncommitted work from someone else, a conflict touches code you did not write, or the check fails after updating.
+- Commit trailers: `Purpose:`, with `Refs ROC-n` or `Fixes ROC-n` above them when there is an issue, plus `Next:` and
+  `Open:` when work remains. When the topic changes or the session gets long, write the handoff in the commits and give
+  a copy-paste prompt for a fresh session. Hand off with `rls-linear handoff`; pick up with `rls-linear pickup`.
+- Claude Code compacts a session by itself after about an hour idle once it is above 200k tokens (idle compaction, on
+  by default). A session above about 300k tokens that ends a turn with nothing left running says so in one line and offers `/compact`
+  or a handoff prompt.
+
+## Read these first, when the work reaches them
+- Landing by hand, a pull request's auto-merge, or clearing a worktree: `rules/landing.md`.
+- A deploy, a Worker or Pages publish, or any Cloudflare step: `rules/deploys.md`.
+- A rule change, a rule audit, or how these rules reach cloud sessions and other tools: `rules/changing-the-rules.md`.
+
+## Models
+- Pick each agent's model for the job, not the topic, and give the reason in the brief: Haiku for lookups and sweeps;
+  Sonnet for work built from something already decided that a check or screenshot verifies; Opus for planning, briefs,
+  review, risky changes, design inside an existing system, root-cause investigations and architecture calls.
+- Fable is off by default for now because of cost. Use it only when the person asks, or when Opus has already tried the
+  same job and fallen short; say which in the brief.
+- The rls-linear Agent hook refuses a subagent whose model is not named, or a started session whose model and effort are
+  not named, and says what is missing. The report says which model each agent ran on. When a session's risky part is done and only landing is
+  left, move it down with `set_session_model` / `set_session_effort`. Full rule: `rules/models.md`.
+
+## Truth and the person's screen
+- Every fact has one home, and only its home is proof:
+  - what the code is and does: the repository (`origin/main`, or the branch in question);
+  - whether a check passed: that check's own result on that exact commit;
+  - what Michael decided: his words with their date; the newest one wins;
+  - who holds work, what is planned and why: the work tracker's live record; check anything it says was built, landed
+    or is under way against the repository;
+  - how work is done here: the rules files (this file, each repo's CLAUDE.md or AGENTS.md, plugins' skills and rules).
+- Everything else is a dated copy: a summary, what a Linear issue says was built or landed, a handoff, a note, a start
+  brief, another session's message, a ticked box, Claude's memory, your own earlier turns. Before a step depends on a fact, read it at its home in
+  this turn, unless you already did and nothing since could have changed it. For an issue, run `rls-linear show ROC-n`,
+  then confirm the items your plan rests on (state, paths, commands, what landed). When a copy disagrees with its home,
+  act on the home and correct the copy where it lives, or say why you could not.
+- Claude's memory keeps only what stays true between sessions: how Michael wants things done (with his words and date),
+  where things live, and lessons not yet in a rules file. It never holds where work stands (branches, commits, issue
+  states, check results, next steps): that goes in the work tracker and the commit messages. A memory is a pointer to a
+  fact's home, not proof. Fix or remove a wrong memory, or one holding status, in the same turn, once anything still
+  true in it is saved at its home.
+- Name work by what it does, then its number. The first time a message names an issue, write its feature and a plain
+  short title, then the number in brackets: "Apple checks: the UI test fix (ROC-2330)". After that, the short
+  name alone. Never write a bare number, a session named by a number, a shortened list ("1841, 1842"), or an internal
+  code without its meaning. When a message names three or more issues, group them under feature headings. When you need
+  something from Michael, say the ask in words. `rls-linear ref ROC-n ...` prints the lines.
+
+## Landing and worktrees
+- Before pushing, confirm three things: the branch is up to date with `origin/main`, the project's check passes on that
+  exact state (green `mac-gate` / `mac-app` commit status, or the repo's own GitHub check where it has no Mac job), and
   `git log origin/main..HEAD` holds only your commits. Then land and push without asking.
 - Land with `rls-linear land`, not by rebasing and asking for a second full check by hand. It takes the repo's landing
   turn, rebases on `origin/main`, applies the rebase rule below (old tip's green full check, main's changed files,
@@ -98,27 +156,6 @@ The live copy is https://raw.githubusercontent.com/RocketLaunchStudio/studio-rul
 - Any other repo whose `main` requires a status check lands by pull request after its own check is green, with
   auto-merge (rebase method) and Auto-fix on unless the diff touches a Tier C path in `rules/risk-tiers.md`. A Tier C
   path never gets auto-merge. Then carry on; GitHub merges it when CI passes.
-- Auto-fix is for failures in your own code. Report an environment failure (a stale design system lock, a queue timeout)
-  in one line and wait it out, never "fix" it by changing code.
-- A green Risk A or B merge in the portal or website deploys through the repo's own deploy workflow without asking; then
-  check production.
-- Michael approves Risk C: contacting or charging a client, deleting his photos or video, and until he says
-  otherwise spending his money, public App Store releases and permanently deleting production data.
-- Stop and assess instead of landing if the main checkout has uncommitted work from someone else, a conflict touches
-  code you did not write, or the check fails after updating.
-- Commit trailers: `Purpose:`, with `Refs ROC-n` or `Fixes ROC-n` above them, plus `Next:` and `Open:` when work
-  remains. When the topic changes or the session gets long, write the handoff in the commits and give a copy-paste
-  prompt for a fresh session.
-- Claude Code compacts a session by itself after about an hour idle once it is above 200k tokens (idle compaction, on
-  by default). A session above about 300k tokens that ends a turn with nothing left running says so in one line and
-  offers `/compact` or a handoff prompt.
-- Cloud sessions and other AI tools never see the machine-wide CLAUDE.md or `~/.claude`: they read the repo's
-  `AGENTS.md` and the public live file
-  `https://raw.githubusercontent.com/RocketLaunchStudio/studio-rules/main/STUDIO_RULES.md`, generated from these rules
-  by the rls-linear plugin's `scripts/studio_rules.py`. Each repo fetches it at session start, through its cloud hook or
-  its `AGENTS.md`. A repo's `STUDIO_RULES.md` is only a backup for when the live file cannot be fetched; its being
-  behind is not a failure. Hand off with `rls-linear handoff`; pick up with
-  `rls-linear pickup`.
 - Clear finished worktrees only with `rls-linear worktrees --apply`, or `rls-linear done` for the session's own; both
   check that nothing is lost and nobody uses it. Branches are never deleted, nothing is forced, and each removal is
   archived first (`rls-linear worktrees restore <name>`). For a worktree the Claude app leased or pooled, use only
@@ -135,7 +172,27 @@ The live copy is https://raw.githubusercontent.com/RocketLaunchStudio/studio-rul
   raised limits and permanently deleting production data (a D1 database, KV namespace, R2 bucket or its objects) are
   Risk C: ask Michael in chat first.
 
-## Models
+## Changing the rules: the procedure
+- When Michael changes a rule in chat, write it into its file (plugin, CLAUDE.md or skill) before acting on it, add his
+  exact words and the date to `machine/RULES-HISTORY.md` for a rule in machine/CLAUDE.md, in the files holding text moved out of it
+  (`rules/landing.md`, `deploys.md`, `folders.md`, `changing-the-rules.md`, `models.md`) or in the macs skill, record his exact words on every issue it decides with `rls-linear comment`,
+  and say which sessions must restart: a session keeps the text it loaded at start.
+- Agents never make a rule on their own conclusion. His words in chat apply at once. To propose a new or changed rule,
+  ask him in chat right then with the proposed text, the file, why, and your recommendation, so he can approve it at
+  once. Without his yes nothing is written.
+- In a session he is not in, file the proposal on Linear titled "Proposed rule: ..." (Owner Michael, Ask Product call)
+  for the weekly rules review with Monday planning.
+- Existing rules are audited in rounds of up to 30, those without a quote of his first.
+- Dated planning notes (`*_2026-*.md`, `SPEC.md`) are history and evidence, not rules. Rules live in the machine-wide CLAUDE.md and the files it cites, in each
+  repo's files and in the plugins.
+- Cloud sessions and other AI tools never see the machine-wide CLAUDE.md or `~/.claude`: they read the repo's
+  `AGENTS.md` and the public live file
+  `https://raw.githubusercontent.com/RocketLaunchStudio/studio-rules/main/STUDIO_RULES.md`, generated from these rules
+  by the rls-linear plugin's `scripts/studio_rules.py`. Each repo fetches it at session start, through its cloud hook or
+  its `AGENTS.md`. A repo's `STUDIO_RULES.md` is only a backup for when the live file cannot be fetched; its being
+  behind is not a failure.
+
+## Models: the full rule
 - Pick each agent's model for the job, not the topic, and give the reason in the brief.
 - Haiku: lookups and sweeps, such as finding the files that import a module, checking links or listing issues.
 - Sonnet: work built from something already decided (an approved template, drawing, spec or rule set) that a check or
@@ -155,31 +212,3 @@ The live copy is https://raw.githubusercontent.com/RocketLaunchStudio/studio-rul
   only for planning, review or a risky change. When a session's risky part is done and only landing is left, move it
   down with `set_session_model` / `set_session_effort`. Forks, offers, proposal starts, presets and cloud starts are
   exempt. The same hook refuses a call without both.
-
-## Truth and the person's screen
-- Every fact has one home, and only its home is proof:
-  - what the code is and does: the repository (`origin/main`, or the branch in question);
-  - whether a check passed: that check's own result on that exact commit;
-  - what Michael decided: his words with their date; the newest one wins;
-  - who holds work, what is planned and why: the work tracker's live record; check anything it says was built, landed
-    or is under way against the repository;
-  - how work is done here: the rules files (this file, each repo's CLAUDE.md or AGENTS.md, plugins' skills and rules).
-- Everything else is a dated copy: a summary, a handoff, a start brief, another session's message, a ticked box,
-  Claude's memory, your own earlier turns. Before a step depends on a fact, read it at its home in this turn, unless you
-  already did and nothing since could have changed it. When a copy disagrees with its home, act on the home and correct
-  the copy where it lives, or say why you could not.
-- When you start or plan work from a Linear issue, handoff, note or memory, treat what it claims as unverified until you
-  check it. Run `rls-linear show ROC-n` for an issue, then confirm the items your plan rests on (state, paths, commands,
-  what landed) are current and accurate enough to plan around and act on.
-- Claude's memory keeps only what stays true between sessions: how Michael wants things done (with his words and date),
-  where things live, and lessons not yet in a rules file. It never holds where work stands (branches, commits, issue
-  states, check results, next steps): that goes in the work tracker and the commit messages. A memory is a pointer to a
-  fact's home, not proof. Fix or remove a wrong memory, or one holding status, in the same turn, once anything still
-  true in it is saved at its home.
-- A fact you cannot check is unverified: say so, and take no hard-to-undo step on it. A status claim comes from a
-  command run this turn, not from memory, a log or a note. Say "unverified" for what you could not check.
-- Name work by what it does, then its number. The first time a message names an issue, write its feature and a plain
-  short title, then the number in brackets: "Apple checks: the UI test fix (ROC-2330)". After that, the short
-  name alone. Never write a bare number, a session named by a number, a shortened list ("1841, 1842"), or an internal
-  code without its meaning. When a message names three or more issues, group them under feature headings. When you need
-  something from Michael, say the ask in words. `rls-linear ref ROC-n ...` prints the lines.
