@@ -19,6 +19,11 @@ The live copy is https://raw.githubusercontent.com/RocketLaunchStudio/studio-rul
 - Write a failing test before a fix only when the change's complexity or sensitivity warrants it: logic with several
   paths, a bug that has come back, or anything touching money, sign-in, client data or production data. Prove simple,
   low-risk changes (copy, styling, an obvious one-line fix) with the repo's check or a screenshot instead.
+- When a failure could happen again, file it with a `Pattern:` line and fix it at the strongest level that works: a
+  tool, then a check, then a rule, and a memory note only until one of those exists. Monday planning lists every
+  pattern seen twice, and each gets a fix that week.
+- Every agent brief says how that repo's full check runs, copied from the checks skill, and when the agent must report
+  progress if it is not finished.
 - Call something fixed, done or shipped only when the same message shows the evidence: output from the project's check
   run after your last change, a screenshot, or the build number. Say what you did not check.
 - For anything judged by looking (layout, styling, a user flow), screenshot the current state before planning, and
