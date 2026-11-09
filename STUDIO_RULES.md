@@ -110,8 +110,9 @@ The live copy is https://raw.githubusercontent.com/RocketLaunchStudio/studio-rul
 - Cloud sessions and other AI tools never see the machine-wide CLAUDE.md or `~/.claude`: they read the repo's
   `AGENTS.md` and the public live file
   `https://raw.githubusercontent.com/RocketLaunchStudio/studio-rules/main/STUDIO_RULES.md`, generated from these rules
-  by the rls-linear plugin's `scripts/studio_rules.py`. A repo's `STUDIO_RULES.md` is only a backup for when the live
-  file cannot be fetched; its being behind is not a failure. Hand off with `rls-linear handoff`; pick up with
+  by the rls-linear plugin's `scripts/studio_rules.py`. Each repo fetches it at session start, through its cloud hook or
+  its `AGENTS.md`. A repo's `STUDIO_RULES.md` is only a backup for when the live file cannot be fetched; its being
+  behind is not a failure. Hand off with `rls-linear handoff`; pick up with
   `rls-linear pickup`.
 - Clear finished worktrees only with `rls-linear worktrees --apply`, or `rls-linear done` for the session's own; both
   check that nothing is lost and nobody uses it. Branches are never deleted, nothing is forced, and each removal is
