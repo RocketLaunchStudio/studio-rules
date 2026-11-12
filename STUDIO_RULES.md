@@ -164,8 +164,9 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   `git worktree prune`, once its folder is gone, never `git worktree remove`.
 - An agent may delete a GitHub branch only when its work is on main (`git cherry origin/main <branch>` lists nothing
   left) or a copy is confirmed on GitHub under an `archive/<date>/` name at the same commit first. `main` and
-  `archive/` branches are never deleted. Until the approved route exists (ROC-3000) the guard's refusal stands: never
-  delete from a script, or with a push that names an empty source, to get past it.
+  `archive/` branches are never deleted. The one route is `rls-linear branch-delete <branch>` (a dry run; `--apply`
+  deletes), which checks all of this and logs each restore command; the guard refuses every other remote delete,
+  including one in a script or a push that names an empty source.
 
 ## Deploys and Cloudflare
 - Deploy only through the repo's own deploy script or CI workflow, never by calling a deploy tool directly or skipping
