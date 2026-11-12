@@ -110,8 +110,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   review, risky changes, design inside an existing system, root-cause investigations and architecture calls.
 - Fable is off by default for now because of cost. Use it only when the person asks, or when Opus has already tried the
   same job and fallen short; say which in the brief.
-- The rls-linear Agent hook refuses a subagent whose model is not named, or a started session whose model and effort are
-  not named, and says what is missing. The report says which model each agent ran on. When a session's risky part is done and only landing is
+- The rls-linear Agent hook refuses a subagent whose model is not named or whose brief does not open with the line
+  `Model: <name>, because <reason>`, or a started session whose model and effort are not named, and says what is missing. The report says which model each agent ran on. When a session's risky part is done and only landing is
   left, move it down with `set_session_model` / `set_session_effort`. Full rule: `rules/models.md`.
 
 ## Truth and the person's screen
