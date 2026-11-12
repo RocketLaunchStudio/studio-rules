@@ -150,7 +150,9 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - Rebase on `origin/main` first, then run the full check once on that exact commit (the portal's check runs on its pull
   request), then push or open the pull request; a rebase after the full check wastes it. After a rebase that touched
   none of the branch's files, the earlier full-check pass stands once the repo's quick check passes on the rebased
-  commit.
+  commit. Crew Console has no quick check: landing lints its changed Swift files locally and runs no local `crew
+  build`; a rebased Crew commit gets one queued full check, and its push hook reads the green `mac-gate` on that exact
+  commit (Michael, 2026-11-11, ROC-2943: "Drop it (Recommended)").
 - The Client Portal's full check is GitHub's "CI passed" in full mode on the pull request's head, with no Mac job: push,
   open the pull request at once and turn on auto-merge.
 - Any other repo whose `main` requires a status check lands by pull request after its own check is green, with
