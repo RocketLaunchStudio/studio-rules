@@ -95,6 +95,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - Commit trailers: `Purpose:`, with `Refs ROC-n` or `Fixes ROC-n` above them when there is an issue, plus `Next:` and
   `Open:` when work remains. When the topic changes or the session gets long, write the handoff in the commits and give
   a copy-paste prompt for a fresh session. Hand off with `rls-linear handoff`; pick up with `rls-linear pickup`.
+- Anything a second session needs (a contract, a spec, a check script, a fixture) goes in the repo and is pushed the
+  day it is written, never only in a scratch, temp or notes folder that ends with the session.
 - Claude Code compacts a session by itself after about an hour idle once it is above 200k tokens (idle compaction, on
   by default). A session above about 300k tokens that ends a turn with nothing left running says so in one line and offers `/compact`
   or a handoff prompt.
