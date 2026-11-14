@@ -168,9 +168,11 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   earlier commits of the branch (Michael, 2026-11-14, ROC-3240: "All nine, as ranked", approving the pipeline redundancy audit) (the portal's check runs on its pull
   request), then push or open the pull request; a rebase after the full check wastes it. After a rebase that touched
   none of the branch's files, the earlier full-check pass stands once the repo's quick check passes on the rebased
-  commit. Crew Console has no quick check: landing runs no local `crew build`; a rebased Crew commit gets one queued
-  full check, and its push hook reads the green `mac-gate` on that exact commit (Michael, 2026-11-11, ROC-2943: "Drop
-  it (Recommended)"). On every Crew landing, `land` also runs SwiftLint on the changed Swift files and Crew's
+  commit. Crew Console has no quick check and landing runs no local `crew build` (Michael, 2026-11-11, ROC-2943: "Drop
+  it (Recommended)"); after a clean rebase its landing checks below stand as the quick check, the earlier green
+  `mac-gate` is kept, `land` records it as a green status on the rebased commit, and its push hook accepts land's push
+  (Michael, 2026-11-14, ROC-3273: "Yes, option A"). A rebase that touched the branch's files, or a branch with no green
+  `mac-gate`, still gets one queued full check on the exact commit. On every Crew landing, `land` also runs SwiftLint on the changed Swift files and Crew's
   `scripts/run-agent-doctor.sh` (its repo checks plus the mac rail, permission catalog and surface map checks) on a clean
   copy of the exact commit it pushes; a failure, or a Mac without SwiftLint, stops the landing (Michael, 2026-11-12,
   ROC-2995: "Yes - as recommended - intend to add all fixes and improvements suggested.").
