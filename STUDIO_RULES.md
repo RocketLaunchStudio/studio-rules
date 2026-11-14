@@ -163,7 +163,14 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   turn, rebases on `origin/main`, applies the rebase rule below (old tip's green full check, main's changed files,
   `git patch-id --stable`), runs the quick or full check accordingly, then pushes and fast-forwards main (a pull request
   with auto-merge for the portal and rls-demo). `--dry-run` shows the decision without pushing. A rebase conflict stops
-  it with the branch unchanged.
+  it with the branch unchanged, unless the repo's project-map entry names an `onConflict` command (the design system:
+  `python3 scripts/ds_register.py regen`, which takes main's copy of generated files, keeps both sides of append-only
+  ledgers and reruns the generators); `land` runs it, continues the rebase, and the result always takes one full check.
+  Where GitHub requires status checks on main (branch protection or a ruleset), no quick check stands in for them: the
+  landed commit gets its own full check. A rebase conflict `land` cannot resolve, and a landing given up because main
+  kept moving (two full checks, then a third needed), go on the failure ledger (ROC-3253) as environment failures; the
+  limit stays at two full checks, and after a week with the Crew rule below in place the give-ups are counted again
+  before anything else changes (Michael, 2026-11-14, ROC-3280: "Stop, log it, measure").
 - Rebase on `origin/main` first, then run the full check once on that exact commit, the one being landed, never on
   earlier commits of the branch (Michael, 2026-11-14, ROC-3240: "All nine, as ranked", approving the pipeline redundancy audit) (the portal's check runs on its pull
   request), then push or open the pull request; a rebase after the full check wastes it. After a rebase that touched
