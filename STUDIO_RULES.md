@@ -170,7 +170,11 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   landed commit gets its own full check. A rebase conflict `land` cannot resolve, and a landing given up because main
   kept moving (two full checks, then a third needed), go on the failure ledger (ROC-3253) as environment failures; the
   limit stays at two full checks, and after a week with the Crew rule below in place the give-ups are counted again
-  before anything else changes (Michael, 2026-11-14, ROC-3280: "Stop, log it, measure").
+  before anything else changes (Michael, 2026-11-14, ROC-3280: "Stop, log it, measure"). Every run (not a dry run) also
+  records its start, each round (rule, check, seconds waiting for the turn and the check) and its outcome in the
+  Mac's shared timing log, `rls-land/timings/<user>-<YYYY-MM>.jsonl` (ROC-3275), alongside those ledger notes;
+  `rls-linear land --report [days]` prints landing p50 and p90 per repo and the give-ups, and the morning repeat report
+  (`repeats.py`) counts give-ups and rebase conflicts as repeats.
 - Rebase on `origin/main` first, then run the full check once on that exact commit, the one being landed, never on
   earlier commits of the branch (Michael, 2026-11-14, ROC-3240: "All nine, as ranked", approving the pipeline redundancy audit) (the portal's check runs on its pull
   request), then push or open the pull request; a rebase after the full check wastes it. After a rebase that touched
