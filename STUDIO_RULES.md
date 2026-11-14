@@ -65,9 +65,14 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 
 ## Checks and waiting
 - Each repo's `Gate:` line names its full check.
-- One full check per commit: iterate with the repo's quick or targeted checks and run the full check once, when the
-  change is ready for review, after rebasing on `origin/main`. A later step (push hook, pull request, deploy) reuses a
-  green status on that exact commit.
+- One full check per finished piece of work (Michael, 2026-11-14, ROC-3240: "All nine, as ranked", approving the pipeline redundancy audit): commit as often as useful on the branch and iterate with
+  quick or targeted checks; the full check runs once, on the commit `rls-linear land` pushes after rebasing on
+  `origin/main`, never on earlier commits of the branch. Land once per finished piece of work (usually one issue); docs
+  and rule edits ride along with it, and plugin rule and skill edits land as one batch per session. A change touching
+  only docs, rules, skills or bookkeeping lands on the quick check alone (in `land` once ROC-3244 lands). Crew Console,
+  Studio Companion and Asset Flow move to a landing check scoped to the paths a change touches, with the full suite
+  nightly, as Edit Buddy and the kit do (ROC-3245). A later step (push hook, pull request, deploy, the push to main)
+  reuses a green status on that exact commit.
 - Auto-fix is for failures in your own code. Report an environment failure (a stale design system lock, a queue timeout)
   in one line and wait it out, never "fix" it by changing code.
 - The queue re-runs once by itself a failure it classes as environment or timeout. Re-run a code failure only after a
@@ -154,7 +159,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   `git patch-id --stable`), runs the quick or full check accordingly, then pushes and fast-forwards main (a pull request
   with auto-merge for the portal and rls-demo). `--dry-run` shows the decision without pushing. A rebase conflict stops
   it with the branch unchanged.
-- Rebase on `origin/main` first, then run the full check once on that exact commit (the portal's check runs on its pull
+- Rebase on `origin/main` first, then run the full check once on that exact commit, the one being landed, never on
+  earlier commits of the branch (Michael, 2026-11-14, ROC-3240: "All nine, as ranked", approving the pipeline redundancy audit) (the portal's check runs on its pull
   request), then push or open the pull request; a rebase after the full check wastes it. After a rebase that touched
   none of the branch's files, the earlier full-check pass stands once the repo's quick check passes on the rebased
   commit. Crew Console has no quick check: landing runs no local `crew build`; a rebased Crew commit gets one queued
