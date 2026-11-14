@@ -24,6 +24,10 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   tool, then a check, then a rule, and a memory note only until one of those exists. Each morning the repeat report
   lists every pattern seen twice in the last four weeks, from the checks, session history and `Pattern:` lines. The one
   costing the most gets a fix that day and the rest stay ranked. A pattern that returns after its fix moves up a level.
+- Every failed build or check is noted the day it happens, on the pipeline failure ledger (ROC-3253) or its own issue,
+  with a `Pattern:` line, even when a re-run passes. If the log does not show the cause, a subagent finds the root
+  cause while the work goes on. Before deciding a fix, search the repo (comments, config, git log) and Linear for an
+  earlier fix or ruling on the same cause, and build on it rather than deciding again (Michael, 2026-11-14, ROC-3253).
 - Every agent brief says how that repo's full check runs, copied from the checks skill, and when the agent must report
   progress if it is not finished.
 - Call something fixed, done or shipped only when the same message shows the evidence: output from the project's check
