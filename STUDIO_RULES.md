@@ -97,6 +97,10 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   a copy-paste prompt for a fresh session. Hand off with `rls-linear handoff`; pick up with `rls-linear pickup`.
 - Anything a second session needs (a contract, a spec, a check script, a fixture) goes in the repo and is pushed the
   day it is written, never only in a scratch, temp or notes folder that ends with the session.
+- Plan mode may write notes and reports, never code: the planning session saves its research, findings and agents'
+  reports in `~/.claude/plans/<topic>/` with a `README.md` index and a dated status log, so nothing is lost to
+  compaction, a restart or a handoff. They are dated copies; when the work starts they move into the repo on its
+  branch and are pushed that day.
 - Claude Code compacts a session by itself after about an hour idle once it is above 200k tokens (idle compaction, on
   by default). A session above about 300k tokens that ends a turn with nothing left running says so in one line and offers `/compact`
   or a handoff prompt.
