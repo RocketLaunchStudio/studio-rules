@@ -74,7 +74,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   change. File any check whose result flips on the same commit.
 - Waiting means watching. Before a turn ends on a wait (a Mac job, a CI run, a sync, another session), start a
   background watcher that exits on every final result, restart it if it times out, and act on the result. Use the tool's
-  own wait (`rls-linear mac-job --resume <id>`, `gh run watch <id> --exit-status`), and a `sleep` loop only where none
+  own wait (`rls-linear mac-job --resume <id>`, `gh run watch <id> --interval 60 --exit-status`: without `--interval`
+  it polls every 3 seconds and drains the shared GitHub limit, so a hook refuses it), and a `sleep` loop only where none
   exists. If you cannot watch, put the id and the next step on the issue with `rls-linear handoff`. A `rls-linear land` or
   `mac-job` that its hook moved to the background is its own watcher, so act on the result when it arrives; a subagent or
   an unattended run is not moved and waits for the result itself.
@@ -222,7 +223,9 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   because <reason>", and a Workflow script names `model` on every agent call. A model above the one an agent's own file
   pins names that pin in the Model line and says why. A fork runs on the parent's model, so a Fable session never forks
   or starts Fable subagents; it hands that work to Sonnet or Opus. The report says which model each agent ran on. The
-  rls-linear Agent hook refuses a call that breaks any of these.
+  rls-linear Agent hook refuses a call that breaks any of these, except the pin: a model above the agent file's pin
+  whose Model line does not name it goes through with a warning, logged in `~/.local/state/rls/model-pin-warnings.jsonl`
+  (Michael, 2026-11-14: "Turn the refusal into a warning").
 - Sessions started from another session (`start_session`, user_asked or own_initiative) name `model` and `effort`, with
   the reason in the brief. Effort is low for waiting on a check and landing, medium for most building and fixing, high
   only for planning, review or a risky change. When a session's risky part is done and only landing is left, move it
