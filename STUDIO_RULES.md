@@ -208,8 +208,14 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   open the pull request at once and turn on auto-merge.
 - Only a repo whose `main` requires a pull request (the Client Portal, rls-demo: `PR_REPOS` in `land.py`) lands by
   pull request, after its own check is green, with auto-merge (rebase method) and Auto-fix on unless the diff touches a
-  Tier C path in `rules/risk-tiers.md`. A Tier C path never gets auto-merge. Then carry on; GitHub merges it when CI
-  passes. A repo whose `main` requires only status checks (the website: `verify`; the design system: `verify` and
+  Tier C path in `rules/risk-tiers.md`. A Tier C path never gets auto-merge. `land` then releases the landing turn and
+  watches the pull request until GitHub merges it or a required check fails (ROC-3401): it prints "Landed: <pull
+  request> merged" and exits 0, or names each failing job with its link, notes the failure on the ledger (ROC-3253)
+  and exits 1, leaving the branch on the pushed commit for a fix; run `land` again after pushing the fix. With auto-merge
+  off (Tier C, `--no-auto-merge`) it waits for the checks only and says "Checked, not merged". It never says "Done"
+  while CI runs. When the landed diff reaches portal edge functions (`supabase/functions/<name>/` or a `_shared` file
+  one imports), it says NOT DEPLOYED, names the commit in each tag `live/functions/<name>` that production still runs,
+  and prints the Deploy workflow command; landing never deploys them. A repo whose `main` requires only status checks (the website: `verify`; the design system: `verify` and
   `mac`) fast-forwards main: `land` waits until every required check is green on the exact commit, newest run of each,
   then pushes (ROC-3283). Its clean-rebase rule never applies there, so a rebased commit gets its own full check
   (ROC-3280).
