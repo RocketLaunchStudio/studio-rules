@@ -29,7 +29,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   background subagent; the session goes back to its task. Before anyone decides a fix, they look for an earlier fix or
   ruling on the same cause. Criteria and steps: the "Failed builds" section of the `rls-linear:checks` skill
   (Michael, 2026-11-14, ROC-3253).
-- Every agent brief says how that repo's full check runs, copied from the checks skill, and when the agent must report
+- Every agent brief says when to land (once, when its piece is finished or a reader needs main; never after each
+  publish), how that repo's full check runs, copied from the checks skill, and when the agent must report
   progress if it is not finished.
 - Call something fixed, done or shipped only when the same message shows the evidence: output from the project's check
   run after your last change, a screenshot, or the build number. Every status claim comes from a command run this turn,
@@ -73,7 +74,12 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - One full check per finished piece of work (Michael, 2026-11-14, ROC-3240: "All nine, as ranked", approving the pipeline redundancy audit): commit as often as useful on the branch and iterate with
   quick or targeted checks; the full check runs once, on the commit `rls-linear land` pushes after rebasing on
   `origin/main`, never on earlier commits of the branch. Land once per finished piece of work (usually one issue); docs
-  and rule edits ride along with it, and plugin rule and skill edits land as one batch per session. A change whose
+  and rule edits ride along with it, and plugin rule and skill edits land as one batch per session. Between landings,
+  commit and `git push` the branch after each step: a pushed commit is safe and is progress proof ("pushed at <sha>
+  on <branch>"). Land before the piece is finished only when a reader needs the change on main now: `rls-ds`, the
+  Decide site, or a session about to branch from `origin/main`. A page republish, a repo copy of an artifact or a
+  status-log line is not a piece. A session that ends with pushed commits not on main lands them or hands them off
+  (a Stop hook names them) (Michael, 2026-11-14, ROC-3342: "Yes, all five"). A change whose
   every file is on the docs-only list (`config/quick-only-paths.json` in rls-linear) lands on the quick check alone,
   except in claude-plugins and in repos whose main requires status checks (ROC-3244). Crew Console, Studio Companion
   and Asset Flow have a landing check scoped to the paths a change touches, with the full suite nightly, as Edit Buddy
@@ -160,6 +166,13 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - Before pushing, confirm three things: the branch is up to date with `origin/main`, the project's check passes on that
   exact state (green `mac-gate` / `mac-app` commit status, or the repo's own GitHub check where it has no Mac job), and
   `git log origin/main..HEAD` holds only your commits. Then land and push without asking.
+- Push between landings, land once per piece (machine CLAUDE.md "Checks and waiting", ROC-3342). A Stop hook
+  (`scripts/unlanded.py stop`) blocks a turn that ends with commits on a `claude/*` branch that are not pushed, once
+  per turn; a SessionEnd hook notes the session's branch and its commits not on main in `rls-land/unlanded.jsonl`.
+  `rls-linear unlanded` lists pushed `claude/*` branches over a day old whose commits main lacks (by `git cherry`),
+  with the session that last left each; the 06:45 repeat report includes the list. Audit status logs that several
+  sessions append to merge by union (`.gitattributes` `docs/audits/**/README.md merge=union` in Crew Console), so
+  write a status line as a new line, never an edit.
 - Land with `rls-linear land`, not by rebasing and asking for a second full check by hand. It takes the repo's landing
   turn, rebases on `origin/main`, applies the rebase rule below (old tip's green full check, main's changed files,
   `git patch-id --stable`), runs the quick or full check accordingly, then pushes and fast-forwards main (a pull request
@@ -168,7 +181,10 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   `python3 scripts/ds_register.py regen`, which takes main's copy of generated files, keeps both sides of append-only
   ledgers and reruns the generators); `land` runs it, continues the rebase, and the result always takes one full check.
   Where GitHub requires status checks on main (branch protection or a ruleset), no quick check stands in for them: the
-  landed commit gets its own full check. A rebase conflict `land` cannot resolve, and a landing given up because main
+  landed commit gets its own full check, and `land` keeps the landing turn through that check, so a second landing
+  waits instead of checking at the same time and making the first one's check stale (ROC-3342: on 2026-11-14, 30
+  design system landings in two hours ran in overlapping pairs and threes and four gave up). Other repos still
+  release the turn while their full check runs. A rebase conflict `land` cannot resolve, and a landing given up because main
   kept moving (two full checks, then a third needed), go on the failure ledger (ROC-3253) as environment failures; the
   limit stays at two full checks, and after a week with the Crew rule below in place the give-ups are counted again
   before anything else changes (Michael, 2026-11-14, ROC-3280: "Stop, log it, measure"). Every run (not a dry run) also
