@@ -73,10 +73,11 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - One full check per finished piece of work (Michael, 2026-11-14, ROC-3240: "All nine, as ranked", approving the pipeline redundancy audit): commit as often as useful on the branch and iterate with
   quick or targeted checks; the full check runs once, on the commit `rls-linear land` pushes after rebasing on
   `origin/main`, never on earlier commits of the branch. Land once per finished piece of work (usually one issue); docs
-  and rule edits ride along with it, and plugin rule and skill edits land as one batch per session. A change touching
-  only docs, rules, skills or bookkeeping lands on the quick check alone (in `land` once ROC-3244 lands). Crew Console,
-  Studio Companion and Asset Flow move to a landing check scoped to the paths a change touches, with the full suite
-  nightly, as Edit Buddy and the kit do (ROC-3245). A later step (push hook, pull request, deploy, the push to main)
+  and rule edits ride along with it, and plugin rule and skill edits land as one batch per session. A change whose
+  every file is on the docs-only list (`config/quick-only-paths.json` in rls-linear) lands on the quick check alone,
+  except in claude-plugins and in repos whose main requires status checks (ROC-3244). Crew Console, Studio Companion
+  and Asset Flow have a landing check scoped to the paths a change touches, with the full suite nightly, as Edit Buddy
+  and the kit do (ROC-3245). A later step (push hook, pull request, deploy, the push to main)
   reuses a green status on that exact commit.
 - Auto-fix is for failures in your own code. Report an environment failure (a stale design system lock, a queue timeout)
   in one line and wait it out, never "fix" it by changing code.
@@ -189,9 +190,17 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   ROC-2995: "Yes - as recommended - intend to add all fixes and improvements suggested.").
 - The Client Portal's full check is GitHub's "CI passed" in full mode on the pull request's head, with no Mac job: push,
   open the pull request at once and turn on auto-merge.
-- Any other repo whose `main` requires a status check lands by pull request after its own check is green, with
-  auto-merge (rebase method) and Auto-fix on unless the diff touches a Tier C path in `rules/risk-tiers.md`. A Tier C
-  path never gets auto-merge. Then carry on; GitHub merges it when CI passes.
+- Only a repo whose `main` requires a pull request (the Client Portal, rls-demo: `PR_REPOS` in `land.py`) lands by
+  pull request, after its own check is green, with auto-merge (rebase method) and Auto-fix on unless the diff touches a
+  Tier C path in `rules/risk-tiers.md`. A Tier C path never gets auto-merge. Then carry on; GitHub merges it when CI
+  passes. A repo whose `main` requires only status checks (the website: `verify`; the design system: `verify` and
+  `mac`) fast-forwards main: `land` waits until every required check is green on the exact commit, newest run of each,
+  then pushes (ROC-3283). Its clean-rebase rule never applies there, so a rebased commit gets its own full check
+  (ROC-3280).
+- `land` refuses a branch that puts files back the way they were before a recent main commit, which is what a
+  `git reset --soft` onto a newer `origin/main` does (ROC-3305). Rebuild such a branch from `origin/main` with only
+  your own changes. An undo that is meant uses `git revert <sha>`, or `rls-linear land --allow-revert "<why>"`, which
+  prints the reason with the landing.
 - Clear finished worktrees only with `rls-linear worktrees --apply`, or `rls-linear done` for the session's own; both
   check that nothing is lost and nobody uses it. Branches are never deleted, nothing is forced, and each removal is
   archived first (`rls-linear worktrees restore <name>`). For a worktree the Claude app leased or pooled, use only
