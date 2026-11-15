@@ -215,7 +215,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   off (Tier C, `--no-auto-merge`) it waits for the checks only and says "Checked, not merged". It never says "Done"
   while CI runs. When the landed diff reaches portal edge functions (`supabase/functions/<name>/` or a `_shared` file
   one imports), it says NOT DEPLOYED, names the commit in each tag `live/functions/<name>` that production still runs,
-  and prints the Deploy workflow command; landing never deploys them. A repo whose `main` requires only status checks (the website: `verify`; the design system: `verify` and
+  and prints the Deploy workflow command; landing never deploys them. Non-Tier C functions then deploy without asking
+  (`rules/deploys.md`, Michael 2026-11-15, ROC-3406); Tier C ones wait for Michael's yes. A repo whose `main` requires only status checks (the website: `verify`; the design system: `verify` and
   `mac`) fast-forwards main: `land` waits until every required check is green on the exact commit, newest run of each,
   then pushes (ROC-3283). Its clean-rebase rule never applies there, so a rebased commit gets its own full check
   (ROC-3280).
@@ -236,6 +237,14 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 ## Deploys and Cloudflare
 - Deploy only through the repo's own deploy script or CI workflow, never by calling a deploy tool directly or skipping
   its checks. This covers publishing a Worker or Pages build.
+- Client Portal edge functions that are not Tier C (`rules/risk-tiers.md`, Client App row) deploy automatically
+  after a green CI run on main, through the Deploy workflow, which keeps its live-source check. A function counts as
+  changed when its folder, or a `_shared` file it imports directly or through other shared files, changed since the
+  commit in its `live/functions/<name>` tag. A Tier C function, or one a changed Tier C shared file reaches, deploys
+  only on Michael's yes. Until the workflow does this by itself (ROC-3406), a session whose landed change reaches a
+  non-Tier C function runs `gh workflow run deploy.yml --repo RocketLaunchStudio/rls-client-portal --ref main -f
+  target=functions -f functions="<names>"` once main's CI is green, without asking, watches the run, and checks the
+  live source matches (`-f target=check`). (Michael, 2026-11-15: "Yes, non-Tier C only".)
 - Use the `cloudflare` plugin server
   (search, docs, execute, whoami) for the account and Wrangler inside a repo; `rls-linear parity` checks that the plugin
   is on. Do not rely on a claude.ai Cloudflare connector, which belongs to one account. If a session has no `cloudflare`
