@@ -214,9 +214,11 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   and exits 1, leaving the branch on the pushed commit for a fix; run `land` again after pushing the fix. With auto-merge
   off (Tier C, `--no-auto-merge`) it waits for the checks only and says "Checked, not merged". It never says "Done"
   while CI runs. When the landed diff reaches portal edge functions (`supabase/functions/<name>/` or a `_shared` file
-  one imports), it says NOT DEPLOYED, names the commit in each tag `live/functions/<name>` that production still runs,
-  and prints the Deploy workflow command; landing never deploys them. Non-Tier C functions then deploy without asking
-  (`rules/deploys.md`, Michael 2026-11-15, ROC-3406); Tier C ones wait for Michael's yes. A repo whose `main` requires only status checks (the website: `verify`; the design system: `verify` and
+  one imports), it says per function either "deploys automatically after main's CI" (the portal's Deploy workflow does
+  it once main's CI is green, after the live-source check) or "waits for Michael's yes" (a Tier C folder, or a changed
+  Tier C file reaching it), and prints the Deploy command for the held ones and for any function with no
+  `live/functions/<name>` tag; landing itself never deploys them (`rules/deploys.md`, Michael 2026-11-15, ROC-3406).
+  Against a Deploy workflow without the automatic path it says NOT DEPLOYED with each tag's commit instead. A repo whose `main` requires only status checks (the website: `verify`; the design system: `verify` and
   `mac`) fast-forwards main: `land` waits until every required check is green on the exact commit, newest run of each,
   then pushes (ROC-3283). Its clean-rebase rule never applies there, so a rebased commit gets its own full check
   (ROC-3280).
@@ -241,10 +243,10 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   after a green CI run on main, through the Deploy workflow, which keeps its live-source check. A function counts as
   changed when its folder, or a `_shared` file it imports directly or through other shared files, changed since the
   commit in its `live/functions/<name>` tag. A Tier C function, or one a changed Tier C shared file reaches, deploys
-  only on Michael's yes. Until the workflow does this by itself (ROC-3406), a session whose landed change reaches a
-  non-Tier C function runs `gh workflow run deploy.yml --repo RocketLaunchStudio/rls-client-portal --ref main -f
-  target=functions -f functions="<names>"` once main's CI is green, without asking, watches the run, and checks the
-  live source matches (`-f target=check`). (Michael, 2026-11-15: "Yes, non-Tier C only".)
+  only on Michael's yes, through a manual `target=functions` run of the Deploy workflow. The run summary of each
+  automatic run lists what it deployed and what waits for Michael; a red "Edge functions not deployed" job means a
+  live-source mismatch, a failed deploy or changes it could not work out, and a function with no tag is listed but never
+  deployed automatically (portal `scripts/deploy/select-functions.mjs`, ROC-3406). (Michael, 2026-11-15: "Yes, non-Tier C only".)
 - Use the `cloudflare` plugin server
   (search, docs, execute, whoami) for the account and Wrangler inside a repo; `rls-linear parity` checks that the plugin
   is on. Do not rely on a claude.ai Cloudflare connector, which belongs to one account. If a session has no `cloudflare`
