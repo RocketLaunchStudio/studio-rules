@@ -237,6 +237,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   including one in a script or a push that names an empty source.
   For many branches at once, `rls-linear branches --apply` (ROC-3586) archives each landed or superseded branch's tip
   at `refs/archive/<date>/<branch>` on GitHub and then deletes it through `branch-delete`; stranded ones are listed only.
+  `git cherry` misses work made in a merge commit and a landing later reverted on main, so both commands treat such
+  a branch as not landed.
 
 ## Deploys and Cloudflare
 - Deploy only through the repo's own deploy script or CI workflow, never by calling a deploy tool directly or skipping
