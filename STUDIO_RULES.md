@@ -235,6 +235,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   `archive/` branches are never deleted. The one route is `rls-linear branch-delete <branch>` (a dry run; `--apply`
   deletes), which checks all of this and logs each restore command; the guard refuses every other remote delete,
   including one in a script or a push that names an empty source.
+  For many branches at once, `rls-linear branches --apply` (ROC-3586) archives each landed or superseded branch's tip
+  at `refs/archive/<date>/<branch>` on GitHub and then deletes it through `branch-delete`; stranded ones are listed only.
 
 ## Deploys and Cloudflare
 - Deploy only through the repo's own deploy script or CI workflow, never by calling a deploy tool directly or skipping
