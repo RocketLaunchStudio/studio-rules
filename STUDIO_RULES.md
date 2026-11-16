@@ -224,13 +224,13 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   (ROC-3280).
 - Editing in the worktree while a background `land` runs is safe: a landing never discards an edit or a commit it did
   not make (ROC-2992; twice a stopped landing's `git reset --hard` wiped an hour of edits). It starts only on a clean
-  tree, moves the branch back after a stop only with `git reset --keep` (which keeps every uncommitted edit, or refuses
-  and changes nothing), leaves the branch where it is when it gained commits while landing ran, and stops instead of
-  rebasing or making its version bump over uncommitted edits, saying which files and that they are untouched. What
-  lands is only what was committed when the check ran. The cost: if main moves while you edit, the rebase cannot run,
-  so that landing stops; commit or finish the edits and land again. One gap remains: while the design system's
-  `onConflict` command resolves a rebase conflict, the worktree is mid-rebase, so wait for `land` to report before
-  editing there.
+  tree, and it never rebases, resolves a conflict or commits in your worktree: the rebase, the repo's `onConflict`
+  command (the design system's `ds_register.py regen`) and the plugins' version bump all run in a throwaway copy of
+  the branch (ROC-3611). The branch then moves to the result, or back after a stop, only with `git reset --keep`, which
+  keeps every uncommitted edit, or refuses and changes nothing. When it gained commits while landing ran, it stays
+  where it is. What lands is only what was committed when the check ran. One case still stops a landing: main
+  changed a file you have uncommitted edits to, so moving the branch would overwrite them; land names the file, changes
+  nothing, and you commit or finish the edit and land again.
 - `land` refuses a branch that puts files back the way they were before a recent main commit, which is what a
   `git reset --soft` onto a newer `origin/main` does (ROC-3305). Rebuild such a branch from `origin/main` with only
   your own changes. An undo that is meant uses `git revert <sha>`, or `rls-linear land --allow-revert "<why>"`, which
