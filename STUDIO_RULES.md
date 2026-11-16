@@ -228,9 +228,13 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   command (the design system's `ds_register.py regen`) and the plugins' version bump all run in a throwaway copy of
   the branch (ROC-3611). The branch then moves to the result, or back after a stop, only with `git reset --keep`, which
   keeps every uncommitted edit, or refuses and changes nothing. When it gained commits while landing ran, it stays
-  where it is. What lands is only what was committed when the check ran. One case still stops a landing: main
-  changed a file you have uncommitted edits to, so moving the branch would overwrite them; land names the file, changes
-  nothing, and you commit or finish the edit and land again.
+  where it is. What lands is only what was committed when the check ran. Two cases still stop a landing; land names
+  the files, changes nothing, and you commit or finish the edits and land again:
+  - main changed a file you have uncommitted edits to, so moving the branch would overwrite them;
+  - the repo's quick command runs in your worktree (claude-plugins, Studio Companion, Edit Buddy, Asset Flow and the
+    studio board; Crew Console and the design system have none) and you have uncommitted edits when it would start,
+    or edit or commit while it runs. Its result would test your edits, not the commit being landed, so it never
+    counts (ROC-3612).
 - `land` refuses a branch that puts files back the way they were before a recent main commit, which is what a
   `git reset --soft` onto a newer `origin/main` does (ROC-3305). Rebuild such a branch from `origin/main` with only
   your own changes. An undo that is meant uses `git revert <sha>`, or `rls-linear land --allow-revert "<why>"`, which
