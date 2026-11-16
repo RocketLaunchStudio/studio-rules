@@ -222,6 +222,15 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   `mac`) fast-forwards main: `land` waits until every required check is green on the exact commit, newest run of each,
   then pushes (ROC-3283). Its clean-rebase rule never applies there, so a rebased commit gets its own full check
   (ROC-3280).
+- Editing in the worktree while a background `land` runs is safe: a landing never discards an edit or a commit it did
+  not make (ROC-2992; twice a stopped landing's `git reset --hard` wiped an hour of edits). It starts only on a clean
+  tree, moves the branch back after a stop only with `git reset --keep` (which keeps every uncommitted edit, or refuses
+  and changes nothing), leaves the branch where it is when it gained commits while landing ran, and stops instead of
+  rebasing or making its version bump over uncommitted edits, saying which files and that they are untouched. What
+  lands is only what was committed when the check ran. The cost: if main moves while you edit, the rebase cannot run,
+  so that landing stops; commit or finish the edits and land again. One gap remains: while the design system's
+  `onConflict` command resolves a rebase conflict, the worktree is mid-rebase, so wait for `land` to report before
+  editing there.
 - `land` refuses a branch that puts files back the way they were before a recent main commit, which is what a
   `git reset --soft` onto a newer `origin/main` does (ROC-3305). Rebuild such a branch from `origin/main` with only
   your own changes. An undo that is meant uses `git revert <sha>`, or `rls-linear land --allow-revert "<why>"`, which
