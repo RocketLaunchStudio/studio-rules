@@ -181,10 +181,14 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   `python3 scripts/ds_register.py regen`, which takes main's copy of generated files, keeps both sides of append-only
   ledgers and reruns the generators); `land` runs it, continues the rebase, and the result always takes one full check.
   Where GitHub requires status checks on main (branch protection or a ruleset), no quick check stands in for them: the
-  landed commit gets its own full check, and `land` keeps the landing turn through that check, so a second landing
-  waits instead of checking at the same time and making the first one's check stale (ROC-3342: on 2026-11-14, 30
-  design system landings in two hours ran in overlapping pairs and threes and four gave up). Other repos still
-  release the turn while their full check runs. A rebase conflict `land` cannot resolve, and a landing given up because main
+  landed commit gets its own full check. In every repo the full check runs without the landing turn: `land` takes the
+  turn to rebase onto current `origin/main`, decide, run the landing checks and push, and lets it go while a full
+  check runs (Michael, 2026-11-17, ROC-3768: "Free the line - we need to investigate into why the design system holds
+  up everything and what is and isn't necessary"; this replaces the 2026-11-14 hold through the check, ROC-3342).
+  When main moved during the check, the next turn rebases and checks again only when main's new commits touch the
+  branch's files, change how the check itself runs (CI workflows, dependency lockfiles, the gate's own config:
+  `RECHECK_ALWAYS` in `land.py`), the patch changed, or main requires its checks on the exact commit; otherwise the
+  green check is reused under the rule below. Main never moves without a green check on the exact commit pushed. A rebase conflict `land` cannot resolve, and a landing given up because main
   kept moving (two full checks, then a third needed), go on the failure ledger (ROC-3253) as environment failures; the
   limit stays at two full checks, and after a week with the Crew rule below in place the give-ups are counted again
   before anything else changes (Michael, 2026-11-14, ROC-3280: "Stop, log it, measure"). Every run (not a dry run) also
@@ -225,7 +229,7 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   Against a Deploy workflow without the automatic path it says NOT DEPLOYED with each tag's commit instead. A repo whose `main` requires only status checks (the website: `verify`; the design system: `verify` and
   `mac`) fast-forwards main: `land` waits until every required check is green on the exact commit, newest run of each,
   then pushes (ROC-3283). Its clean-rebase rule never applies there, so a rebased commit gets its own full check
-  (ROC-3280).
+  (ROC-3280), run without the landing turn (ROC-3768).
 - Editing in the worktree while a background `land` runs is safe: a landing never discards an edit or a commit it did
   not make (ROC-2992; twice a stopped landing's `git reset --hard` wiped an hour of edits). It starts only on a clean
   tree, and it never rebases, resolves a conflict or commits in your worktree: the rebase, the repo's `onConflict`
