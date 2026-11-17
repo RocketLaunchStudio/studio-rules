@@ -232,7 +232,9 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   Against a Deploy workflow without the automatic path it says NOT DEPLOYED with each tag's commit instead. A repo whose `main` requires only status checks (the website: `verify`; the design system: `verify` and
   `mac`) fast-forwards main: `land` waits until every required check is green on the exact commit, newest run of each,
   then pushes (ROC-3283). Its clean-rebase rule never applies there, so a rebased commit gets its own full check
-  (ROC-3280), run without the landing turn (ROC-3768).
+  (ROC-3280), run without the landing turn (ROC-3768). A design system push to a `claude/` branch starts no CI: `land`
+  starts `verify` and `swift-kit` itself (workflow_dispatch) on the commit it pushes, once per commit (`LANDING_DISPATCH`
+  in `land.py`, ROC-3735).
 - Editing in the worktree while a background `land` runs is safe: a landing never discards an edit or a commit it did
   not make (ROC-2992; twice a stopped landing's `git reset --hard` wiped an hour of edits). It starts only on a clean
   tree, and it never rebases, resolves a conflict or commits in your worktree: the rebase, the repo's `onConflict`
