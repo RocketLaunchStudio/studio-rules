@@ -234,7 +234,7 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - Editing in the worktree while a background `land` runs is safe: a landing never discards an edit or a commit it did
   not make (ROC-2992; twice a stopped landing's `git reset --hard` wiped an hour of edits). It starts only on a clean
   tree, and it never rebases, resolves a conflict or commits in your worktree: the rebase, the repo's `onConflict`
-  command (the design system's `ds_register.py regen`) and the plugins' version bump all run in a throwaway copy of
+  command (the design system's `ds_register.py regen`) and setting aside an old plugins version bump run in a throwaway copy of
   the branch (ROC-3611). The branch then moves to the result, or back after a stop, only with `git reset --keep`, which
   keeps every uncommitted edit, or refuses and changes nothing. When it gained commits while landing ran, it stays
   where it is. What lands is only what was committed when the check ran. Two cases still stop a landing; land names
