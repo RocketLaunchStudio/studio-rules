@@ -63,7 +63,9 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - Michael approves Risk C: contacting or charging a client, deleting his photos or video, and until he says
   otherwise spending his money, public App Store releases and permanently deleting production data.
 - To put a build on Michael's own Mac or iPhone to try, use a Debug build and install (device USB, XcodeBuildMCP or the
-  repo's run command), not a release. Public releases (external TestFlight, App Store) stay Risk C.
+  repo's run command), not a release. Public releases (external TestFlight, App Store) stay Risk C. A Mac Debug app goes
+  in `~/Applications/RLS Debug.noindex/`, never `/Applications` or `~/Applications` itself, so Spotlight does not
+  re-index it on every install (Michael, 2026-11-17, ROC-3814).
 
 ## Changing the rules
 - When Michael changes a rule in chat, it applies at once: write it into its file before acting on it, following
