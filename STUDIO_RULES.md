@@ -204,6 +204,10 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   `scripts/run-agent-doctor.sh` (its repo checks plus the mac rail, permission catalog and surface map checks) on a clean
   copy of the exact commit it pushes; a failure, or a Mac without SwiftLint, stops the landing (Michael, 2026-11-12,
   ROC-2995: "Yes - as recommended - intend to add all fixes and improvements suggested.").
+- Every design system landing runs its `scripts/quick.sh` (the fast Python checks from `verify.sh`: specs, ledger,
+  headlines, process lanes and their tests, about 15 seconds) as a landing check on a clean copy of the rebased commit,
+  before the branch is pushed for `verify` and `mac`; a failure stops the landing without a GitHub run (ROC-3724). It is
+  not a quick check: every rebased commit still takes `verify` and `mac`, which main requires (ROC-3280).
 - The Client Portal's full check is GitHub's "CI passed" in full mode on the pull request's head, with no Mac job: push,
   open the pull request at once and turn on auto-merge.
 - Only a repo whose `main` requires a pull request (the Client Portal, rls-demo: `PR_REPOS` in `land.py`) lands by
