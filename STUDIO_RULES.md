@@ -21,9 +21,10 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   paths, a bug that has come back, or anything touching money, sign-in, client data or production data. Prove simple,
   low-risk changes (copy, styling, an obvious one-line fix) with the repo's check or a screenshot instead.
 - When a failure could happen again, file it with a `Pattern:` line and fix it at the strongest level that works: a
-  tool, then a check, then a rule, and a memory note only until one of those exists. Each morning the repeat report
-  lists every pattern seen twice in the last four weeks, from the checks, session history and `Pattern:` lines. The one
-  costing the most gets a fix that day and the rest stay ranked. A pattern that returns after its fix moves up a level.
+  tool, then a check, then a rule, and a memory note only until one of those exists. The morning repeat report only
+  reports: the daily tidy's summary on the upkeep log names the top three patterns of the last four weeks by measured
+  minutes lost, when each was last seen and whether its fix held. A session or Michael decides which to fix. A pattern
+  that returns after its fix moves up a level.
 - A failed build or check never pulls a session off its task. A failure your own change in progress caused is ordinary
   work. Any other failure is noted in one line on the pipeline failure ledger and, if the cause is unclear, handed to a
   background subagent; the session goes back to its task. Before anyone decides a fix, they look for an earlier fix or
