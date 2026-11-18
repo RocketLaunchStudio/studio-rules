@@ -78,8 +78,10 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   quick or targeted checks; the full check runs once, on the commit `rls-linear land` pushes after rebasing on
   `origin/main`, never on earlier commits of the branch. Land once per finished piece of work (usually one issue); docs
   and rule edits ride along with it, and plugin rule and skill edits land as one batch per session. Between landings,
-  commit and `git push` the branch after each step: a pushed commit is safe and is progress proof ("pushed at <sha>
-  on <branch>"). Land before the piece is finished only when a reader needs the change on main now: `rls-ds`, the
+  commit after each step; a commit is progress proof ("committed at <sha> on <branch>"). Push the branch only when
+  something needs it on GitHub: a handoff, another session, or the end of a session that leaves work unlanded. A
+  branch push runs no CI: `rls-linear land` starts the check on the commit it lands (Michael, 2026-11-17: "Yes, stop
+  it", ending CI on branch pushes and the push after each step). Land before the piece is finished only when a reader needs the change on main now: `rls-ds`, the
   Decide site, or a session about to branch from `origin/main`. A page republish, a repo copy of an artifact or a
   status-log line is not a piece. A session that ends with pushed commits not on main lands them or hands them off
   (a Stop hook names them) (Michael, 2026-11-14, ROC-3342: "Yes, all five"). A change whose
