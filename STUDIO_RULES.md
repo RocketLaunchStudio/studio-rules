@@ -121,11 +121,16 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   has uncommitted work from someone else, a conflict touches code you did not write, or the check fails after updating.
 - Commit trailers: `Purpose:`, with `Refs ROC-n` or `Fixes ROC-n` above them when there is an issue, plus `Next:` and
   `Open:` when work remains. Hand off with `rls-linear handoff`; pick up with `rls-linear pickup`.
-- Hand off at boundaries. When a piece of work lands, the topic changes, or the session is past about 200 requests or
-  200k tokens at the end of a piece, the session writes its handoff (`rls-linear handoff` and the commit trailers),
-  gives a copy-paste prompt for a fresh session, and stops there instead of starting the next piece. It finishes the
-  piece in hand first and never hands off in the middle of a change (Michael, 2026-11-18, ROC-3917: "Hand off at
-  boundaries (Recommended)").
+- Hand off at boundaries. When a piece of work lands, the topic changes, or the session is past 200 requests at the
+  end of a piece (the rls-linear Stop hook says when), the session writes its handoff (`rls-linear handoff` and the
+  commit trailers; work with no issue and no commits uses `rls-linear handoff --new`), offers the next piece as a
+  session card from the brief the handoff prints (fresh, never a fork, the model and effort `rules/models.md` picks; a
+  copy-paste prompt only where there are no session tools), offers the wrap-up's Archive button for Michael's tap, and
+  stops there instead of starting the next piece. It finishes the piece in hand first and never hands off in the
+  middle of a change. A session running child sessions is not stopped by the request count while a child runs; a
+  child ends a turn only when it is done or blocked (each ended turn wakes the session that started it) (Michael,
+  2026-11-18, ROC-3917: "Hand off at boundaries (Recommended)"; 2026-11-18, ROC-3926: "As recommended - but review
+  and ensure this actually works").
 - Anything a second session needs (a contract, a spec, a check script, a fixture) goes in the repo and is pushed the
   day it is written, never only in a scratch, temp or notes folder that ends with the session.
 - Plan mode may write notes and reports, never code: the planning session saves its research, findings and agents'
