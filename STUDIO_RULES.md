@@ -50,6 +50,9 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - No emojis in product or UI text. No em dashes in prose.
 - For details that change between versions (Claude Code, libraries, APIs), check current docs or the lockfile, not
   memory.
+- Batch steps that do not depend on each other. Reads, searches and check commands that can run together go out in
+  one message, and a look across several files is one command or one cheap search agent, not one file per step. Every
+  extra step rereads the whole session (Michael, 2026-11-18, ROC-3917: "Yes").
 
 ## Work list
 - Linear (workspace rocketlaunchstudio, team ROC) is the one list of work. Load the `rls-linear:linear` skill before any
@@ -117,8 +120,12 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - Stop and assess instead of landing if `git log origin/main..HEAD` holds anything but your commits, the main checkout
   has uncommitted work from someone else, a conflict touches code you did not write, or the check fails after updating.
 - Commit trailers: `Purpose:`, with `Refs ROC-n` or `Fixes ROC-n` above them when there is an issue, plus `Next:` and
-  `Open:` when work remains. When the topic changes or the session gets long, write the handoff in the commits and give
-  a copy-paste prompt for a fresh session. Hand off with `rls-linear handoff`; pick up with `rls-linear pickup`.
+  `Open:` when work remains. Hand off with `rls-linear handoff`; pick up with `rls-linear pickup`.
+- Hand off at boundaries. When a piece of work lands, the topic changes, or the session is past about 200 requests or
+  200k tokens at the end of a piece, the session writes its handoff (`rls-linear handoff` and the commit trailers),
+  gives a copy-paste prompt for a fresh session, and stops there instead of starting the next piece. It finishes the
+  piece in hand first and never hands off in the middle of a change (Michael, 2026-11-18, ROC-3917: "Hand off at
+  boundaries (Recommended)").
 - Anything a second session needs (a contract, a spec, a check script, a fixture) goes in the repo and is pushed the
   day it is written, never only in a scratch, temp or notes folder that ends with the session.
 - Plan mode may write notes and reports, never code: the planning session saves its research, findings and agents'
@@ -126,8 +133,7 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   compaction, a restart or a handoff. They are dated copies; when the work starts they move into the repo on its
   branch and are pushed that day.
 - Claude Code compacts a session by itself after about an hour idle once it is above 200k tokens (idle compaction, on
-  by default). A session above about 300k tokens that ends a turn with nothing left running says so in one line and offers `/compact`
-  or a handoff prompt.
+  by default).
 
 ## Read these first, when the work reaches them
 - Landing by hand, a pull request's auto-merge, or clearing a worktree: `rules/landing.md`.
@@ -340,3 +346,37 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   only for planning, review or a risky change. When a session's risky part is done and only landing is left, move it
   down with `set_session_model` / `set_session_effort`. Forks, offers, proposal starts, presets and cloud starts are
   exempt. The same hook refuses a call without both.
+- Which work goes where, and how it is checked (Michael, 2026-11-18, ROC-3917: "Yes, land all three", after asking
+  that the rule "detail ... which sessions are exceptions and not run on opus - or when or when not to check the work
+  of a sonnet agent based on the type of work it performs rather than automatically assuming accuracy"; evidence:
+  `docs/token-spend/trial-2026-11.md` in claude-plugins). The bullets below are that rule.
+- Stays on Opus: the lead session (it plans, writes briefs, decides and checks what agents return); Risk C and D work
+  and anything touching money, sign-in, client data or production data; changes to shared gates, guards, CI, hooks and
+  rules files; root-cause work where the cause is not yet known; design judgement whose verdict decides what Michael
+  is shown, and the independent registrar; and review, checking claims against a source, and audits that a decision,
+  a landing or a report to Michael rests on. In the 2026-11 trial Sonnet found 80% of confirmed review findings, 61%
+  of check findings and 64% of audit findings against a bar of 90%, and passed risky items Opus caught.
+- Goes to Sonnet: work built from something already decided that a command, test or screenshot proves; mechanical
+  edits and ports; and lookups and sweeps where every claim comes back with its evidence and a missed item costs
+  little because a later step or check would catch it. Haiku for the simplest of these. Sonnet's shortfall in the
+  trial was missed findings (53 of 158), not wrong ones (3 of 105), so work that must be complete is not Sonnet's.
+- Checking a Sonnet agent depends on the kind of work; its accuracy is never assumed:
+  - proved by a command (tests, a check, a screenshot): the lead runs it or reads its result on that commit. No
+    reviewer is needed;
+  - fact finding (a lookup or sweep): every claim carries its evidence (file and line, command output, or URL and
+    quote). The lead checks at least 3 claims or 1 in 5, and every claim a hard-to-undo step rests on. One wrong
+    claim: check them all or rerun on Opus. A spot check cannot show what was left out;
+  - judgement (a review verdict, design compliance, a suspected cause): stays on Opus. If a Sonnet agent returns one
+    anyway it is a lead, not a verdict: Opus confirms each finding before anyone acts, and "nothing found" or "this is
+    safe" on risky work is not a pass;
+  - code edits: Risk A, the repo's check; Risk B, the check plus the lead reads the diff.
+- When a Sonnet agent falls short (it fails its check twice, says it is unsure, contradicts itself, or a spot check
+  finds a wrong claim), rerun the job on Opus and pass along what the first attempt found. Never a third Sonnet try.
+  The lead names the escalation in its report. A kind of work that escalates more than 1 time in 5 goes back to Opus
+  by default, and a kind of work kept on Opus moves to Sonnet only through a new measured trial, never a session's
+  own judgement.
+- Effort for subagents: a subagent on a different model from its parent does not take the session's effort, so every
+  brief names it. Low for lookups and sweeps; medium for work from a decided spec; high for bug fixes and anything
+  with edge cases. Opus review, check and audit agents run at high until a trial compares medium with high. `max` is
+  not used without a measured reason. High wrote about 10% more output per request than medium in a week of
+  transcripts, roughly 2% more cost: it buys care, it is not a savings lever.
