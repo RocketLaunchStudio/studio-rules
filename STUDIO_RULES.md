@@ -178,9 +178,12 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - Before pushing, confirm three things: the branch is up to date with `origin/main`, the project's check passes on that
   exact state (green `mac-gate` / `mac-app` commit status, or the repo's own GitHub check where it has no Mac job), and
   `git log origin/main..HEAD` holds only your commits. Then land and push without asking.
-- Push between landings, land once per piece (machine CLAUDE.md "Checks and waiting", ROC-3342). A Stop hook
-  (`scripts/unlanded.py stop`) blocks a turn that ends with commits on a `claude/*` branch that are not pushed, once
-  per turn; a SessionEnd hook notes the session's branch and its commits not on main in `rls-land/unlanded.jsonl`.
+- Commit between landings, push only when something needs the branch on GitHub (a handoff, another session, or the
+  end of a session that leaves work unlanded), land once per piece (machine CLAUDE.md "Checks and waiting", ROC-3342;
+  Michael, 2026-11-17: "Yes, stop it", ending the push after each step). A Stop hook (`scripts/unlanded.py stop`)
+  names commits on a `claude/*` branch that are pushed but not on main, once per pushed tip in a session, so an
+  ending session lands them or hands them off; it never asks for a push. A SessionEnd hook notes the session's branch
+  and its commits not on main in `rls-land/unlanded.jsonl`.
   `rls-linear unlanded` lists pushed `claude/*` branches over a day old whose commits main lacks (by `git cherry`),
   with the session that last left each; the 06:45 repeat report includes the list. Audit status logs that several
   sessions append to merge by union (`.gitattributes` `docs/audits/**/README.md merge=union` in Crew Console), so
