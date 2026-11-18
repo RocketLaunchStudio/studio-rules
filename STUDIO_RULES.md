@@ -112,7 +112,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - `main` moves by fast-forward only. Land Risk A or B work with `rls-linear land`, without asking. Its
   steps, and how a repo that requires a status check lands: `rules/landing.md`.
 - A green Risk A or B merge in the portal or website deploys through the repo's own deploy workflow without asking; then
-  check production.
+  check production. The portal's Worker goes live in batches: the merge uploads it and the Deploy workflow's schedule
+  puts it live a few times a day (`rules/deploys.md`).
 - Stop and assess instead of landing if `git log origin/main..HEAD` holds anything but your commits, the main checkout
   has uncommitted work from someone else, a conflict touches code you did not write, or the check fails after updating.
 - Commit trailers: `Purpose:`, with `Refs ROC-n` or `Fixes ROC-n` above them when there is an issue, plus `Next:` and
@@ -280,6 +281,15 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   automatic run lists what it deployed and what waits for Michael; a red "Edge functions not deployed" job means a
   live-source mismatch, a failed deploy or changes it could not work out, and a function with no tag is listed but never
   deployed automatically (portal `scripts/deploy/select-functions.mjs`, ROC-3406). (Michael, 2026-11-15: "Yes, non-Tier C only".)
+- The Client Portal Worker goes live a few times a day, not on every merge (Michael, 2026-11-17: "Batch a few times
+  a day (Recommended)", ROC-3800). A green CI run on main deploys changed non-Tier C edge functions as above and
+  uploads the Worker as a version tagged with its commit, not live; the Deploy workflow's schedule (three off-the-hour
+  times a day, which GitHub starts on or after that time) puts the newest upload on main live with `wrangler versions
+  deploy`, or skips when it already is (portal `scripts/deploy/pick-worker-version.mjs`). A fix that cannot wait runs
+  the Deploy workflow by hand: `target=promote` (the newest upload, in seconds) or `target=worker` (build and deploy
+  now). Check production after the promotion that carries your change, not after the merge. A portal migration that
+  removes or renames something waits until the Worker code that stops using it is live (portal
+  `docs/runbooks/github-deploy.md`, "Batched Worker deploys").
 - Use the `cloudflare` plugin server
   (search, docs, execute, whoami) for the account and Wrangler inside a repo; `rls-linear parity` checks that the plugin
   is on. Do not rely on a claude.ai Cloudflare connector, which belongs to one account. If a session has no `cloudflare`
