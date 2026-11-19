@@ -347,8 +347,11 @@ Moved word for word from machine/CLAUDE.md, "Git: several sessions share each re
   (Michael, 2026-11-14: "Turn the refusal into a warning").
 - Sessions started from another session (`start_session`, user_asked or own_initiative) name `model` and `effort`, with
   the reason in the brief. Effort is low for waiting on a check and landing, medium for most building and fixing, high
-  only for planning, review or a risky change. When a session's risky part is done and only landing is left, move it
-  down with `set_session_model` / `set_session_effort`. Forks, offers, proposal starts, presets and cloud starts are
+  only for planning, review or a risky change. When a session's risky part is done and only landing is left, lower its
+  effort with `set_session_effort`; move it to a cheaper model with `set_session_model` only when 15 or more requests
+  are likely to remain. A model switch rewrites the whole prompt cache at the new model's price (about $0.57 at 150k
+  context, Opus to Sonnet) and pays back after about 12 to 14 requests; of 10 such switches in the 14 days to
+  2026-11-19, 4 lost money (Michael, 2026-11-19: "Yes, as recommended"). Forks, offers, proposal starts, presets and cloud starts are
   exempt. The same hook refuses a call without both.
 - Which work goes where, and how it is checked (Michael, 2026-11-18, ROC-3917: "Yes, land all three", after asking
   that the rule "detail ... which sessions are exceptions and not run on opus - or when or when not to check the work
