@@ -21,15 +21,10 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   paths, a bug that has come back, or anything touching money, sign-in, client data or production data. Prove simple,
   low-risk changes (copy, styling, an obvious one-line fix) with the repo's check or a screenshot instead.
 - When a failure could happen again, file it with a `Pattern:` line and fix it at the strongest level that works: a
-  tool, then a check, then a rule, and a memory note only until one of those exists. The morning repeat report only
-  reports: the daily tidy's summary on the upkeep log names the top three patterns of the last four weeks by measured
-  minutes lost, when each was last seen and whether its fix held. A session or Michael decides which to fix. A pattern
-  that returns after its fix moves up a level.
-- A failed build or check never pulls a session off its task. A failure your own change in progress caused is ordinary
-  work. Any other failure is noted in one line on the pipeline failure ledger and, if the cause is unclear, handed to a
-  background subagent; the session goes back to its task. Before anyone decides a fix, they look for an earlier fix or
-  ruling on the same cause. Criteria and steps: the "Failed builds" section of the `rls-linear:checks` skill
-  (Michael, 2026-11-14, ROC-3253).
+  tool, then a check, then a rule, and a memory note only until one of those exists. A pattern that returns after its
+  fix moves up a level.
+- A failed build or check never pulls a session off its task. Criteria and steps: the "Failed builds" section of the
+  `rls-linear:checks` skill (Michael, 2026-11-14, ROC-3253).
 - Every agent brief says when to land (once, when its piece is finished or a reader needs main; never after each
   publish), how that repo's full check runs, copied from the checks skill, and when the agent must report
   progress if it is not finished.
@@ -39,12 +34,6 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   and take no hard-to-undo step on it.
 - For anything judged by looking (layout, styling, a user flow), screenshot the current state before planning, and
   afterwards show a screenshot plus the exact URL or path to open.
-- A design render shows every part by every current ruling, not only the part under review. Before drawing, read the
-  design system's `platforms/<app>.md`, `rules/native.md` and `rules/current/*.md` for each property drawn, check the
-  app's DS lock and say on the sheet if its kit is stale. Draw SwiftUI sheets with `ImageRenderer`, not `cacheDisplay`,
-  which adds tick lines beside chips. Ticks, placeholder plaques (the yellow "no entry" box), clipping and wrapping are
-  defects: look at every image, fix, and re-render before reporting. Full rules: the "Renders" section of the
-  `rocket-launch-studio-design` skill.
 - Before deleting or overwriting anything that looks unused, check what depends on it and whether another branch holds a
   newer version. Adapt it rather than delete it.
 - No emojis in product or UI text. No em dashes in prose.
@@ -65,10 +54,6 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   or B fix needs no Linear issue; its commit message is the record.
 - Michael approves Risk C: contacting or charging a client, deleting his photos or video, and until he says
   otherwise spending his money, public App Store releases and permanently deleting production data.
-- To put a build on Michael's own Mac or iPhone to try, use a Debug build and install (device USB, XcodeBuildMCP or the
-  repo's run command), not a release. Public releases (external TestFlight, App Store) stay Risk C. A Mac Debug app goes
-  in `~/Applications/RLS Debug.noindex/`, never `/Applications` or `~/Applications` itself, so Spotlight does not
-  re-index it on every install (Michael, 2026-11-17, ROC-3814).
 
 ## Changing the rules
 - When Michael changes a rule in chat, it applies at once: write it into its file before acting on it, following
@@ -82,17 +67,7 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   `origin/main`, never on earlier commits of the branch. Land once per finished piece of work (usually one issue); docs
   and rule edits ride along with it, and plugin rule and skill edits land as one batch per session. Between landings,
   commit after each step; a commit is progress proof ("committed at <sha> on <branch>"). Push the branch only when
-  something needs it on GitHub: a handoff, another session, or the end of a session that leaves work unlanded. A
-  branch push runs no CI: `rls-linear land` starts the check on the commit it lands (Michael, 2026-11-17: "Yes, stop
-  it", ending CI on branch pushes and the push after each step). Land before the piece is finished only when a reader needs the change on main now: `rls-ds`, the
-  Decide site, or a session about to branch from `origin/main`. A page republish, a repo copy of an artifact or a
-  status-log line is not a piece. A session that ends with pushed commits not on main lands them or hands them off
-  (a Stop hook names them) (Michael, 2026-11-14, ROC-3342: "Yes, all five"). A change whose
-  every file is on the docs-only list (`config/quick-only-paths.json` in rls-linear) lands on the quick check alone,
-  except in claude-plugins and in repos whose main requires status checks (ROC-3244). Crew Console, Studio Companion
-  and Asset Flow have a landing check scoped to the paths a change touches, with the full suite nightly, as Edit Buddy
-  and the kit do (ROC-3245). A later step (push hook, pull request, deploy, the push to main)
-  reuses a green status on that exact commit.
+  something needs it on GitHub: a handoff, another session, or the end of a session that leaves work unlanded.
 - Auto-fix is for failures in your own code. Report an environment failure (a stale design system lock, a queue timeout)
   in one line and wait it out, never "fix" it by changing code.
 - The queue re-runs once by itself a failure it classes as environment or timeout. Re-run a code failure only after a
@@ -107,6 +82,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - One investigator per shared problem. Before debugging a shared machine or tool (a runner, a gate), look for
   a Linear issue already held for it, and if there is one, send your findings to its holder and post them there instead
   of starting your own investigation.
+- When to land before a piece is finished, what is not a piece, branch pushes and CI, the docs-only and scoped landing
+  checks, and reusing a green status: `rules/landing.md`, "When to check, push and land".
 
 ## Git: several sessions share each repo
 - Start new work in your own worktree on a `claude/roc-<n>-<topic>` branch made from the latest `origin/main`, never
@@ -114,9 +91,7 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   Risk A or B fix with no issue uses `claude/<topic>`, and its `Next:` and `Open:` trailers are its handoff.
 - `main` moves by fast-forward only. Land Risk A or B work with `rls-linear land`, without asking. Its
   steps, and how a repo that requires a status check lands: `rules/landing.md`.
-- A green Risk A or B merge in the portal or website deploys through the repo's own deploy workflow without asking; then
-  check production. The portal's Worker goes live in batches: the merge uploads it and the Deploy workflow's schedule
-  puts it live a few times a day (`rules/deploys.md`).
+- After a merge in the portal or website: `rules/deploys.md`, "Merges that deploy".
 - Stop and assess instead of landing if `git log origin/main..HEAD` holds anything but your commits, the main checkout
   has uncommitted work from someone else, a conflict touches code you did not write, or the check fails after updating.
 - Commit trailers: `Purpose:`, with `Refs ROC-n` or `Fixes ROC-n` above them when there is an issue, plus `Next:` and
@@ -152,8 +127,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - Fable is off by default for now because of cost. Use it only when the person asks, or when Opus has already tried the
   same job and fallen short; say which in the brief.
 - The rls-linear Agent hook refuses a subagent whose model is not named or whose brief does not open with the line
-  `Model: <name>, because <reason>`, or a started session whose model and effort are not named, and says what is missing. The report says which model each agent ran on. When a session's risky part is done and only landing is
-  left, move it down with `set_session_model` / `set_session_effort`. Full rule: `rules/models.md`.
+  `Model: <name>, because <reason>`, or a started session whose model and effort are not named, and says what is
+  missing. Full rule: `rules/models.md`.
 
 ## Truth and the person's screen
 - Every fact has one home, and only its home is proof:
@@ -284,6 +259,21 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   `git cherry` misses work made in a merge commit and a landing later reverted on main, so both commands treat such
   a branch as not landed.
 
+### When to check, push and land
+Moved word for word from machine/CLAUDE.md, "Checks and waiting", where the rest of the rule stays (ROC-3935).
+- A branch push runs no CI: `rls-linear land` starts the check on the commit it lands (Michael, 2026-11-17: "Yes, stop
+  it", ending CI on branch pushes and the push after each step).
+- Land before the piece is finished only when a reader needs the change on main now: `rls-ds`, the Decide site, or a
+  session about to branch from `origin/main`. A page republish, a repo copy of an artifact or a status-log line is not
+  a piece.
+- A session that ends with pushed commits not on main lands them or hands them off (a Stop hook names them) (Michael,
+  2026-11-14, ROC-3342: "Yes, all five").
+- A change whose every file is on the docs-only list (`config/quick-only-paths.json` in rls-linear) lands on the quick
+  check alone, except in claude-plugins and in repos whose main requires status checks (ROC-3244). Crew Console,
+  Studio Companion and Asset Flow have a landing check scoped to the paths a change touches, with the full suite
+  nightly, as Edit Buddy and the kit do (ROC-3245).
+- A later step (push hook, pull request, deploy, the push to main) reuses a green status on that exact commit.
+
 ## Deploys and Cloudflare
 - Deploy only through the repo's own deploy script or CI workflow, never by calling a deploy tool directly or skipping
   its checks. This covers publishing a Worker or Pages build.
@@ -311,6 +301,12 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - Other Cloudflare steps follow `rules/risk-tiers.md`. Paid plans,
   raised limits and permanently deleting production data (a D1 database, KV namespace, R2 bucket or its objects) are
   Risk C: ask Michael in chat first.
+
+### Merges that deploy
+Moved word for word from machine/CLAUDE.md, "Git: several sessions share each repo" (ROC-3935).
+- A green Risk A or B merge in the portal or website deploys through the repo's own deploy workflow without asking; then
+  check production. The portal's Worker goes live in batches: the merge uploads it and the Deploy workflow's schedule
+  puts it live a few times a day (`rules/deploys.md`).
 
 ## Changing the rules: the procedure
 - When Michael changes a rule in chat, write it into its file (plugin, CLAUDE.md or skill) before acting on it, add his
