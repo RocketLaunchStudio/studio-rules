@@ -153,6 +153,10 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   name alone. Never write a bare number, a session named by a number, a shortened list ("1841, 1842"), or an internal
   code without its meaning. When a message names three or more issues, group them under feature headings. When you need
   something from Michael, say the ask in words. `rls-linear ref ROC-n ...` prints the lines.
+- Call them projects, never missions, in everything we write: app text, issues, docs, plans, specs and new code names
+  (Michael, 2026-11-20: "we dont call them missions anymore, we call them projects"). Only existing database and code
+  identifiers keep the old word (`crew.missions`, `nas_next_mission_code`, Crew Console's `Missions` folders) until a
+  rename lands; name them in backticks as identifiers, never as the feature's name.
 
 ## Landing and worktrees
 - Before pushing, confirm three things: the branch is up to date with `origin/main`, the project's check passes on that
