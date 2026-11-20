@@ -259,7 +259,10 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   left) or a copy is confirmed on GitHub under an `archive/<date>/` name at the same commit first. `main` is never
   deleted. An `archive/` branch is converted to a tag: it goes only once a tag of the same name holds the same commit
   on GitHub, and new archive copies are tags, not branches (Michael, 2026-11-20, cleanup v2: "Convert to tags
-  (Recommended)"). The one route is `rls-linear branch-delete <branch>` (a dry run; `--apply`
+  (Recommended)"). A branch that a dated audit record on main names as its home also goes once a tag under `archive/`
+  holds the same commit on GitHub, checked in the run (Michael, 2026-11-20, ROC-4094: "Yes I approve if everything
+  was checked by an opus agent and we have a backup if needed"; relayed first as "Yes - as recommended when the tag
+  matches the commit"); the session first has an Opus agent verify the list and keeps a backup bundle. The one route is `rls-linear branch-delete <branch>` (a dry run; `--apply`
   deletes), which checks all of this and logs each restore command; the guard refuses every other remote delete,
   including one in a script or a push that names an empty source.
   For many branches at once, `rls-linear branches --apply` (ROC-3586) archives each landed or superseded branch's tip
