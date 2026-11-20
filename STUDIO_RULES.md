@@ -254,8 +254,10 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   archived first (`rls-linear worktrees restore <name>`). For a worktree the Claude app leased or pooled, use only
   `git worktree prune`, once its folder is gone, never `git worktree remove`.
 - An agent may delete a GitHub branch only when its work is on main (`git cherry origin/main <branch>` lists nothing
-  left) or a copy is confirmed on GitHub under an `archive/<date>/` name at the same commit first. `main` and
-  `archive/` branches are never deleted. The one route is `rls-linear branch-delete <branch>` (a dry run; `--apply`
+  left) or a copy is confirmed on GitHub under an `archive/<date>/` name at the same commit first. `main` is never
+  deleted. An `archive/` branch is converted to a tag: it goes only once a tag of the same name holds the same commit
+  on GitHub, and new archive copies are tags, not branches (Michael, 2026-11-20, cleanup v2: "Convert to tags
+  (Recommended)"). The one route is `rls-linear branch-delete <branch>` (a dry run; `--apply`
   deletes), which checks all of this and logs each restore command; the guard refuses every other remote delete,
   including one in a script or a push that names an empty source.
   For many branches at once, `rls-linear branches --apply` (ROC-3586) archives each landed or superseded branch's tip
