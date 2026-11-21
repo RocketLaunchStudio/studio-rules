@@ -106,6 +106,9 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   child ends a turn only when it is done or blocked (each ended turn wakes the session that started it) (Michael,
   2026-11-18, ROC-3917: "Hand off at boundaries (Recommended)"; 2026-11-18, ROC-3926: "As recommended - but review
   and ensure this actually works").
+  One exception: the session running the Client Portal cleanup's orchestrator loop (ROC-4191) starts its own fresh
+  successor at a handoff instead of waiting for his tap, so the loop survives while he is away (Michael, 2026-11-21:
+  "Yes").
 - Anything a second session needs (a contract, a spec, a check script, a fixture) goes in the repo and is pushed the
   day it is written, never only in a scratch, temp or notes folder that ends with the session.
 - Plan mode may write notes and reports, never code: the planning session saves its research, findings and agents'
