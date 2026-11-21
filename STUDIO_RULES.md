@@ -110,7 +110,9 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   successor at a handoff instead of waiting for his tap, so the loop survives while he is away (Michael, 2026-11-21:
   "Yes").
 - Anything a second session needs (a contract, a spec, a check script, a fixture) goes in the repo and is pushed the
-  day it is written, never only in a scratch, temp or notes folder that ends with the session.
+  day it is written, never only in a scratch, temp or notes folder that ends with the session. Evidence dumps, tool
+  output, logs, renders and one-off research code are not such things: they go to the shared evidence folder or the NAS
+  archive, and only the conclusion and a pointer to them go in the repo (Michael, 2026-11-21, ROC-4397: "Yes, add it").
 - Plan mode may write notes and reports, never code: the planning session saves its research, findings and agents'
   reports in `~/.claude/plans/<topic>/` with a `README.md` index and a dated status log, so nothing is lost to
   compaction, a restart or a handoff. They are dated copies; when the work starts they move into the repo on its
