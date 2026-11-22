@@ -106,13 +106,12 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   child ends a turn only when it is done or blocked (each ended turn wakes the session that started it) (Michael,
   2026-11-18, ROC-3917: "Hand off at boundaries (Recommended)"; 2026-11-18, ROC-3926: "As recommended - but review
   and ensure this actually works").
-  One exception: the session running the Client Portal cleanup's orchestrator loop (ROC-4191) starts its own fresh
-  successor at a handoff instead of waiting for his tap, so the loop survives while he is away (Michael, 2026-11-21:
-  "Yes").
-  The same exception covers the session running the Edit-Buddy cleanup's orchestrator loop (ROC-4534): at a handoff
-  it starts its own fresh successor (Opus, high, the start command in that repo's
-  `docs/audits/2026-11-21-cleanup/orchestrator.md`) instead of waiting for his tap (Michael, 2026-11-22, asked whether
-  this loop should get the same exception: "Bypass this rule - it doesn't seem necessary").
+  A session may start its own fresh successor at a handoff instead of waiting for his tap: once the handoff is
+  written it starts the next piece as a new session from the printed brief (fresh, never a fork, the model and effort
+  named), where a tool to start a session exists, and then stops; where none exists it offers the card or the
+  copy-paste prompt. This holds for every session and replaces the two loop-only exceptions of 2026-11-21 and
+  2026-11-22 (Michael, 2026-11-22, asked whether his "Bypass this rule - it doesn't seem necessary" meant one loop or
+  every session: "Every session").
 - Anything a second session needs (a contract, a spec, a check script, a fixture) goes in the repo and is pushed the
   day it is written, never only in a scratch, temp or notes folder that ends with the session. Evidence dumps, tool
   output, logs, renders and one-off research code are not such things: they go to the shared evidence folder or the NAS
