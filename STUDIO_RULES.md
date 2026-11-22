@@ -109,6 +109,10 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   One exception: the session running the Client Portal cleanup's orchestrator loop (ROC-4191) starts its own fresh
   successor at a handoff instead of waiting for his tap, so the loop survives while he is away (Michael, 2026-11-21:
   "Yes").
+  The same exception covers the session running the Edit-Buddy cleanup's orchestrator loop (ROC-4534): at a handoff
+  it starts its own fresh successor (Opus, high, the start command in that repo's
+  `docs/audits/2026-11-21-cleanup/orchestrator.md`) instead of waiting for his tap (Michael, 2026-11-22, asked whether
+  this loop should get the same exception: "Bypass this rule - it doesn't seem necessary").
 - Anything a second session needs (a contract, a spec, a check script, a fixture) goes in the repo and is pushed the
   day it is written, never only in a scratch, temp or notes folder that ends with the session. Evidence dumps, tool
   output, logs, renders and one-off research code are not such things: they go to the shared evidence folder or the NAS
