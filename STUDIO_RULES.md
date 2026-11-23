@@ -197,8 +197,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   (Michael, 2026-11-19, on the decision card "Hold the landing line during checks for the design system and
   website?": "Hold it for those two repos"). The design system holds it only to rebase, decide, run the landing
   checks and push, and lets it go while `verify` and `mac` run; afterwards it takes the turn again, and if main moved
-  it rebases and keeps the pass under the clean-rebase rule below, else takes one more full check, within the same
-  limits (Michael, 2026-11-22, ROC-4585, asked "Should a design system landing let go of the turn while its check
+  it rebases and keeps the pass under the clean-rebase rule below, else takes one more full check and holds the
+  turn through that one, so it always lands and no landing needs a third (Michael, 2026-11-22, ROC-4585, asked "Should a design system landing let go of the turn while its check
   runs? I recommend yes": "go ahead as recommended"; this replaces his 2026-11-19 hold for the design system only).
   Main still moves only by a push made under the turn, by fast-forward, to a commit with green `verify` and `mac`.
   In the design system the turn is first come, first served: each taker waits on its own `land-turn/wait/` branch
