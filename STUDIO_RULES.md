@@ -356,6 +356,13 @@ current landing check, and no preview exists. The per-project table is in the dr
 - One check on all ready branches together; on red, halves until the branch at fault is found, then the rest land
   ("One check, then find culprit (Recommended)"). The branch at fault goes back to its issue, set to Todo with the
   error, for the next free session or the dispatcher ("Back to its issue (Recommended)").
+  Client Portal's train lands its ready pull requests one at a time, in order, each with its own whole check, since
+  its "CI passed" and the email and charge guards judge each pull request ("One at a time (Recommended)").
+- A freeze is turned on by the session leading the risky step, with one command naming the repo, the reason and an
+  end time; it shows on the issue and in the morning report and lifts at the end time unless renewed. Michael can
+  also say "freeze <repo>" in chat ("The leading session (Recommended)").
+- Crew Console's quick check is lint, the agent doctor and a Debug build of only the targets a change touches;
+  backend and docs changes build nothing ("Build what it touches (Recommended)").
 - A finishing session marks its branch ready and never waits ("Should depend on the nature of the agent, and if its a
   leader or a subagent. Whether it hands off, continues and moves on, spawns another agent, updates linear. But it
   shouldnt just wait"): a subagent reports to its lead and stops; a lead continues with a direct follow-on or hands
