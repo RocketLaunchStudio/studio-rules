@@ -25,8 +25,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   fix moves up a level.
 - A failed build or check never pulls a session off its task. Criteria and steps: the "Failed builds" section of the
   `rls-linear:checks` skill (Michael, 2026-11-14, ROC-3253).
-- Every agent brief says when to land (once, when its piece is finished or a reader needs main; never after each
-  publish), how that repo's full check runs, copied from the checks skill, and when the agent must report
+- Every agent brief says when to land or mark its work ready (once, when its piece is finished or a reader needs main;
+  never after each publish), how that repo's landing check runs, copied from the checks skill, and when the agent must report
   progress if it is not finished.
 - Call something fixed, done or shipped only when the same message shows the evidence: output from the project's check
   run after your last change, a screenshot, or the build number. Every status claim comes from a command run this turn,
@@ -48,8 +48,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   Linear step. `rls-linear` (on PATH) makes every write; the Linear MCP servers are for reading.
 - Claim the issue you work on, file what you find, finish with proof. Risk tiers: the rls-linear plugin's
   `rules/risk-tiers.md`.
-- Finished Risk A and B work lands on main by itself through `rls-linear land` once its check is green, without waiting
-  for "land it".
+- Finished Risk A and B work lands on main by itself, without waiting for "land it": it is marked ready and its repo's
+  landing train lands it. Until the train is built (ROC-4676), `rls-linear land` lands each piece as it finishes.
 - Landing runs in the background and keeps the repo's gate. A Debug build to try a change needs no check. A small Risk A
   or B fix needs no Linear issue; its commit message is the record.
 - Michael approves Risk C: contacting or charging a client, deleting his photos or video, and until he says
@@ -62,12 +62,22 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 
 ## Checks and waiting
 - Each repo's `Gate:` line names its full check.
-- One full check per finished piece of work (Michael, 2026-11-14, ROC-3240: "All nine, as ranked", approving the pipeline redundancy audit): commit as often as useful on the branch and iterate with
-  quick or targeted checks; the full check runs once, on the commit `rls-linear land` pushes after rebasing on
-  `origin/main`, never on earlier commits of the branch. Land once per finished piece of work (usually one issue); docs
-  and rule edits ride along with it, and plugin rule and skill edits land as one batch per session. Between landings,
-  commit after each step; a commit is progress proof ("committed at <sha> on <branch>"). Push the branch only when
-  something needs it on GitHub: a handoff, another session, or the end of a session that leaves work unlanded.
+- Checks follow what a change reaches (Michael, 2026-11-23, ROC-4676: "app debug or internal testings shouldnt need
+  full checks"; text approved: "Write it (Recommended)"). Branches, Debug builds, previews and builds for Michael's own
+  devices need only the build. Finished work is marked ready and the session never waits for its landing. Each repo's
+  landing train, run by the relay, lands ready branches when asked, when 3 are ready, when one has waited 3 hours or a
+  reader needs main; never during a freeze. It runs one check on them together, and the branch at fault goes back to
+  its issue. The train's check is the repo's quick check, except the whole check where a landing goes live or reaches
+  every session (Client Portal, website, claude-plugins, linear-relay) and for a change to the checks themselves. Each
+  quick-landing repo's full check runs daily; a red result files one issue and pauses nothing. Anything that reaches
+  clients, crew or the public needs the full check green on its exact commit. Money, sign-in, client data, production
+  data and Michael's only copies of media are tested on every landing that reaches them; previews never send email,
+  charge a card or delete outside the demo client. Previews per project, the train's details and what applies until
+  they are built: `rules/landing.md`, "The landing train and previews".
+- Commit as often as useful on the branch and iterate with quick or targeted checks; a commit is progress proof
+  ("committed at <sha> on <branch>"). Docs and rule edits ride along with the piece they belong to; plugin rule and
+  skill edits land as one batch per session. Push the branch only when something needs it on GitHub: the train, a
+  preview, a handoff, another session, or the end of a session that leaves work unlanded.
 - Auto-fix is for failures in your own code. Report an environment failure (a stale design system lock, a queue timeout)
   in one line and wait it out, never "fix" it by changing code.
 - The queue re-runs once by itself a failure it classes as environment or timeout. Re-run a code failure only after a
@@ -315,7 +325,53 @@ Moved word for word from machine/CLAUDE.md, "Checks and waiting", where the rest
   check alone, except in claude-plugins and in repos whose main requires status checks (ROC-3244). Crew Console,
   Studio Companion and Asset Flow have a landing check scoped to the paths a change touches, with the full suite
   nightly, as Edit Buddy and the kit do (ROC-3245).
-- A later step (push hook, pull request, deploy, the push to main) reuses a green status on that exact commit.
+- A later step (push hook, pull request, deploy, the push to main) reuses a green status on that exact commit. A step
+  that reaches clients, crew or the public reuses only a full check's green (see "The landing train and previews").
+
+### The landing train and previews
+Michael, 2026-11-23, ROC-4676 (his answers word for word there and in machine/RULES-HISTORY.md). Built in this order:
+rule text; the train with quick landing, the daily full check and the relay's heartbeat; website previews; portal
+previews; the combined preview; design system doc site previews; Crew Console's own-device lane; the other apps.
+Until a part is built, the way it replaces stays: `rls-linear land` lands each piece as it finishes with the repo's
+current landing check, and no preview exists. The per-project table is in the draft linked from ROC-4676.
+- Levels. Working (branch commits, Debug builds, previews, builds for Michael's own devices): the build only. Landing:
+  the train's check. Daily: the full check on each quick-landing repo's main, started by the relay, not GitHub's
+  schedule; red files one issue, fixed next, and pauses nothing ("File and fix, no pause (Recommended)"; design
+  system: "Daily + before kit release (Recommended)"). Reaches clients, crew or the public (a production deploy or
+  promotion, a kit release, TestFlight beyond Michael's own group, the App Store, a production migration): the full
+  check green on that exact commit.
+- The train's check: the whole check for Client Portal and the website, whose landings go live ("Full check on landing
+  (Recommended)"), and for claude-plugins and linear-relay, which reach every session ("Whole check on landing
+  (Recommended)"); the quick check everywhere else, except a change to the checks themselves, which takes the full
+  check.
+- When a repo's train runs ("Batched a few times a day (Recommended)": "Plus upon request and a few times a day - based
+  on activity - dont force a trigger on a time if it isnt an opportune time - make sure it can adapt"; "Simple signals
+  (Recommended)"): when asked, when 3 or more branches are ready, when the oldest ready branch has waited 3 hours, or
+  when a reader needs main. It does not run while that repo's main is red, a freeze is on or its runners are busy; it
+  tries again in 30 minutes. Never on a clock alone. Every repo rides it ("Every repo (Recommended)"); `--now` lands
+  one branch at once for an urgent fix or a reader.
+- The relay runs it every 30 minutes and records each run ("The relay - though its health needs to be checked to make
+  sure it works"; "Heartbeat + fallback (Recommended)"). No run in 1 hour shows one line on Michael's next prompt and
+  in the morning report, and any session may run the train itself until the relay is back.
+- One check on all ready branches together; on red, halves until the branch at fault is found, then the rest land
+  ("One check, then find culprit (Recommended)"). The branch at fault goes back to its issue, set to Todo with the
+  error, for the next free session or the dispatcher ("Back to its issue (Recommended)").
+- A finishing session marks its branch ready and never waits ("Should depend on the nature of the agent, and if its a
+  leader or a subagent. Whether it hands off, continues and moves on, spawns another agent, updates linear. But it
+  shouldnt just wait"): a subagent reports to its lead and stops; a lead continues with a direct follow-on or hands
+  off; an unattended run hands off and may start its successor.
+- Previews, started on demand by an agent or Michael, private behind Cloudflare Access, the build only ("Branch previews
+  (Recommended)", "Build only", "Agent or you, on demand (Recommended)"). Web sites (Client Portal, website, the
+  design system doc site, docs): one preview per branch, brought up to date with main first, plus one combined preview
+  of main and every open branch that merges cleanly, naming each branch left out and its conflict ("Both kinds
+  (Recommended)"). Portal previews run the Worker only, on the production database with the demo client and admin
+  screens ("Production, demo client only"; "Admin too"), with email, payments and outbound calls blocked, deletes and
+  bulk changes refused outside the demo client ("Block deletes outside demo (Recommended)"); edge function and schema
+  changes are not previewed. Apple apps: a just-Michael TestFlight or direct install from any branch ("Any branch,
+  build only (Recommended)"; Crew Console's `dev-*` lane needs Michael's Xcode Cloud step, ROC-1080). Edit Buddy keeps
+  its landing check before an install over his real app; the Pi is previewed on a simulated Pi on the Mac and its
+  `make deploy` keeps `make test`; claude-plugins and linear-relay have no preview ("Approve, Edit Buddy keeps gate
+  (Recommended)"; "All projects should allow for a fast lane preview/staging capability").
 
 ## Deploys and Cloudflare
 - Deploy only through the repo's own deploy script or CI workflow, never by calling a deploy tool directly or skipping
