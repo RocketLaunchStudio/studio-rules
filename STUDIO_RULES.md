@@ -96,22 +96,21 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   has uncommitted work from someone else, a conflict touches code you did not write, or the check fails after updating.
 - Commit trailers: `Purpose:`, with `Refs ROC-n` or `Fixes ROC-n` above them when there is an issue, plus `Next:` and
   `Open:` when work remains. Hand off with `rls-linear handoff`; pick up with `rls-linear pickup`.
-- Hand off at boundaries. When a piece of work lands, the topic changes, or the session is past 200 requests at the
-  end of a piece (the rls-linear Stop hook says when), the session writes its handoff (`rls-linear handoff` and the
-  commit trailers; work with no issue and no commits uses `rls-linear handoff --new`), offers the next piece as a
-  session card from the brief the handoff prints (fresh, never a fork, the model and effort `rules/models.md` picks; a
-  copy-paste prompt only where there are no session tools), offers the wrap-up's Archive button for Michael's tap, and
-  stops there instead of starting the next piece. It finishes the piece in hand first and never hands off in the
-  middle of a change. A session running child sessions is not stopped by the request count while a child runs; a
-  child ends a turn only when it is done or blocked (each ended turn wakes the session that started it) (Michael,
-  2026-11-18, ROC-3917: "Hand off at boundaries (Recommended)"; 2026-11-18, ROC-3926: "As recommended - but review
-  and ensure this actually works").
-  A session may start its own fresh successor at a handoff instead of waiting for his tap: once the handoff is
-  written it starts the next piece as a new session from the printed brief (fresh, never a fork, the model and effort
-  named), where a tool to start a session exists, and then stops; where none exists it offers the card or the
-  copy-paste prompt. This holds for every session and replaces the two loop-only exceptions of 2026-11-21 and
-  2026-11-22 (Michael, 2026-11-22, asked whether his "Bypass this rule - it doesn't seem necessary" meant one loop or
-  every session: "Every session").
+- Hand off at boundaries. A session hands off when Michael changes topic, asks for it, or after a compaction at the
+  end of a piece (the rls-linear hooks say when). A direct follow-on (the same issue or its next step, in the same
+  repo) continues in the same session. After a landing with Michael present, the report says "landed" in one line and
+  the session does not stop. To hand off, the session writes its handoff (`rls-linear handoff` and the commit
+  trailers; work with no issue and no commits uses `rls-linear handoff --new`) and offers the next piece as a session
+  card from the brief the handoff prints (fresh, never a fork, the model and effort `rules/models.md` picks); where no
+  tool can start a session it gives the copy-paste prompt. It offers the wrap-up's Archive button only when nothing is
+  left, finishes the piece in hand first and never hands off in the middle of a change. A session Michael is not
+  typing in hands off when its piece lands, and may start its own fresh successor from the printed brief where a tool
+  to start a session exists, then stops (Michael, 2026-11-18, ROC-3917: "Hand off at boundaries (Recommended)";
+  2026-11-22, "Every session"; 2026-11-22, handoff audit: "Yes, rewrite it (Recommended)").
+  The hooks: a landing in a session Michael types in adds one line to his next prompt, with no stop ("One line on
+  your next prompt (Recommended)"); unattended runs get no nudge, and sessions another session started get one
+  only when they have not handed off ("Unattended exempt (Recommended)"); the request count is retired for a line
+  after each compaction ("After a compaction (Recommended)"); any nudge shows as hook feedback, not an error.
 - Anything a second session needs (a contract, a spec, a check script, a fixture) goes in the repo and is pushed the
   day it is written, never only in a scratch, temp or notes folder that ends with the session. Evidence dumps, tool
   output, logs, renders and one-off research code are not such things: they go to the shared evidence folder or the NAS
