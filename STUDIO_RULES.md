@@ -336,7 +336,7 @@ Until a part is built, the way it replaces stays: `rls-linear land` lands each p
 current landing check, and no preview exists. The per-project table is in the draft linked from ROC-4676.
 - Levels. Working (branch commits, Debug builds, previews, builds for Michael's own devices): the build only. Landing:
   the train's check. Daily: the full check on each quick-landing repo's main, started by the relay, not GitHub's
-  schedule; red files one issue, fixed next, and pauses nothing ("File and fix, no pause (Recommended)"; design
+  schedule (`rls-linear main-watch <repo>` by hand); red files one issue, fixed next, and pauses nothing ("File and fix, no pause (Recommended)"; design
   system: "Daily + before kit release (Recommended)"). Reaches clients, crew or the public (a production deploy or
   promotion, a kit release, TestFlight beyond Michael's own group, the App Store, a production migration): the full
   check green on that exact commit.
