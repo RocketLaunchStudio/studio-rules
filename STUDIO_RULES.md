@@ -186,8 +186,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   it with the branch unchanged, unless the repo's project-map entry names an `onConflict` command (the design system:
   `python3 scripts/ds_register.py regen`, which takes main's copy of generated files, keeps both sides of append-only
   ledgers and reruns the generators); `land` runs it, continues the rebase, and the result always takes one full check.
-  Where GitHub requires status checks on main (branch protection or a ruleset), no quick check stands in for them: the
-  landed commit gets its own full check. In every repo the full check runs without the landing turn: `land` takes the
+  Where GitHub requires status checks on main (branch protection or a ruleset), the landed commit needs those checks
+  green on it: a clean rebase keeps its pass there only as the next bullet but one says. In every repo the full check runs without the landing turn: `land` takes the
   turn to rebase onto current `origin/main`, decide, run the landing checks and push, and lets it go while a full
   check runs (Michael, 2026-11-17, ROC-3768: "Free the line - we need to investigate into why the design system holds
   up everything and what is and isn't necessary"; this replaces the 2026-11-14 hold through the check, ROC-3342).
@@ -216,8 +216,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   ROC-2995: "Yes - as recommended - intend to add all fixes and improvements suggested.").
 - Every design system landing runs its `scripts/quick.sh` (the fast Python checks from `verify.sh`: specs, ledger,
   headlines, process lanes and their tests, about 15 seconds) as a landing check on a clean copy of the rebased commit,
-  before the branch is pushed for `verify` and `mac`; a failure stops the landing without a GitHub run (ROC-3724). It is
-  not a quick check: every rebased commit still takes `verify` and `mac`, which main requires (ROC-3280).
+  before the branch is pushed for `verify` and `mac`; a failure stops the landing without a GitHub run (ROC-3724). After
+  a clean rebase it stands as the quick check, as the next bullet says.
 - The Client Portal's full check is GitHub's "CI passed" in full mode on the pull request's head, with no Mac job: push,
   open the pull request at once and turn on auto-merge.
 - Only a repo whose `main` requires a pull request (the Client Portal, rls-demo: `PR_REPOS` in `land.py`) lands by
@@ -234,8 +234,20 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   `live/functions/<name>` tag; landing itself never deploys them (`rules/deploys.md`, Michael 2026-11-15, ROC-3406).
   Against a Deploy workflow without the automatic path it says NOT DEPLOYED with each tag's commit instead. A repo whose `main` requires only status checks (the website: `verify`; the design system: `verify` and
   `mac`) fast-forwards main: `land` waits until every required check is green on the exact commit, newest run of each,
-  then pushes (ROC-3283). Its clean-rebase rule never applies there, so a rebased commit gets its own full check
-  (ROC-3280), run without the landing turn (ROC-3768). A push to a `claude/` branch starts no CI in a repo whose
+  then pushes (ROC-3283). There a clean rebase keeps the earlier pass too (Michael, 2026-11-22, ROC-4585: "Both, clean
+  rebase first", after "could we please adapt our landing approach? so we arent so stuck?"; this replaces, for these
+  repos, the ROC-3280 line "a rebased commit gets its own full check"): after a rebase that touched none of the
+  branch's files, did not change how the check runs (`RECHECK_ALWAYS`, and the repo's own list) and left the patch
+  identical (`git patch-id --stable`), the earlier green `verify` and `mac` stand once the repo's quick check (the
+  design system's `scripts/quick.sh`) passes on the rebased commit. The pass reaches the rebased commit only through
+  the repo's own required workflows, run by GitHub Actions on the commit's `land/**` push, never as a status `land`
+  posts: main's protection pins each check to GitHub Actions (app 15368), and GitHub counts a pinned check only from
+  that app. So a repo takes this rule only when its workflows carry the reuse themselves (the design system's
+  `scripts/ci-rebase-reuse.mjs`, ROC-3771) and that script, read from `origin/main`, agrees with `land`; a repo
+  without it (the website, for now) and any doubt take a full check on the rebased commit, as before. A reuse round
+  is not counted toward the two full checks. Main's own check after the push stays the backstop: after a landing
+  that kept a pass this way, `land` starts the repo's full `verify` on main and, when it fails, notes the red main on
+  the failure ledger (ROC-3253) at once. A push to a `claude/` branch starts no CI in a repo whose
   workflows trigger on `land/**` instead (Michael, 2026-11-17, every repo: "Yes, stop it"; ROC-3735): `land` also pushes
   the commit it checks to a new ref `land/<branch>/<sha12>` (never forced) and its checks run on that push. Not
   workflow_dispatch: main's protection does not count a dispatched run's checks.
