@@ -191,12 +191,18 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   turn to rebase onto current `origin/main`, decide, run the landing checks and push, and lets it go while a full
   check runs (Michael, 2026-11-17, ROC-3768: "Free the line - we need to investigate into why the design system holds
   up everything and what is and isn't necessary"; this replaces the 2026-11-14 hold through the check, ROC-3342).
-  That frees this Mac's line only. The design system and the website also hold their GitHub landing turn (the branch
-  `land-turn/main`, each repo's own `scripts/land_turn.py`, `SHARED_TURN_REPOS` in `land.py`) for the whole landing,
-  full check included, so a landing from a cloud thread, another Mac or the Desk recorder waits instead of moving main
-  under it (Michael, 2026-11-19, on the decision card "Hold the landing line during checks for the design system and
-  website?": "Hold it for those two repos"). In the design system that turn is first come, first served: each taker
-  waits on its own `land-turn/wait/` branch and a free turn goes to the oldest waiter still alive (ROC-4585).
+  The design system and the website also take a GitHub landing turn (the branch `land-turn/main`, each repo's own
+  `scripts/land_turn.py`, `SHARED_TURN_REPOS` in `land.py`), so a landing from a cloud thread, another Mac or the Desk
+  recorder waits instead of moving main under it. The website holds it for the whole landing, full check included
+  (Michael, 2026-11-19, on the decision card "Hold the landing line during checks for the design system and
+  website?": "Hold it for those two repos"). The design system holds it only to rebase, decide, run the landing
+  checks and push, and lets it go while `verify` and `mac` run; afterwards it takes the turn again, and if main moved
+  it rebases and keeps the pass under the clean-rebase rule below, else takes one more full check, within the same
+  limits (Michael, 2026-11-22, ROC-4585, asked "Should a design system landing let go of the turn while its check
+  runs? I recommend yes": "go ahead as recommended"; this replaces his 2026-11-19 hold for the design system only).
+  Main still moves only by a push made under the turn, by fast-forward, to a commit with green `verify` and `mac`.
+  In the design system the turn is first come, first served: each taker waits on its own `land-turn/wait/` branch
+  and a free turn goes to the oldest waiter still alive (ROC-4585).
   When main moved during the check, the next turn rebases and checks again only when main's new commits touch the
   branch's files, change how the check itself runs (CI workflows, dependency lockfiles, the gate's own config:
   `RECHECK_ALWAYS` in `land.py`), the patch changed, or main requires its checks on the exact commit; otherwise the
