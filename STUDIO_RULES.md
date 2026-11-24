@@ -52,7 +52,9 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   landing train lands it. Where a repo's train is on (rls-linear `config/train.json`: claude-plugins first), plain
   `rls-linear land` marks the branch ready and returns. In a repo whose train is not on yet, `rls-linear land` lands a
   lone piece as it finishes, and several finished branches in one repo go on one batch branch and land once, as the
-  train would (`rules/landing.md`).
+  train would (`rules/landing.md`). A cloud session (`CLAUDE_CODE_REMOTE=true`) never lands: it never merges, arms
+  auto-merge, marks work ready or runs a workflow; it pushes its branch, opens a draft pull request and reports, and
+  its lead lands it.
 - Landing runs in the background and keeps the repo's gate. A Debug build to try a change needs no check. A small Risk A
   or B fix needs no Linear issue; its commit message is the record.
 - Michael approves Risk C: contacting or charging a client, deleting his photos or video, and until he says
@@ -106,8 +108,9 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - Start new work in your own worktree on a `claude/roc-<n>-<topic>` branch made from the latest `origin/main`, never
   under /tmp. Run `git status` and `git worktree list` first; if a worktree for your topic exists, resume there. A small
   Risk A or B fix with no issue uses `claude/<topic>`, and its `Next:` and `Open:` trailers are its handoff.
-- `main` moves by fast-forward only. Land Risk A or B work with `rls-linear land`, without asking. Its
-  steps, and how a repo that requires a status check lands: `rules/landing.md`.
+- `main` moves by fast-forward only. Land Risk A or B work with `rls-linear land`, without asking
+  (a cloud session leaves it to its lead, "Work list" above). Its steps, and how a repo that requires a status check
+  lands: `rules/landing.md`.
 - After a merge in the portal or website: `rules/deploys.md`, "Merges that deploy".
 - Stop and assess instead of landing if `git log origin/main..HEAD` holds anything but your commits, the main checkout
   has uncommitted work from someone else, a conflict touches code you did not write, or the check fails after updating.
@@ -392,6 +395,8 @@ ready starts the train for it at once.
   leader or a subagent. Whether it hands off, continues and moves on, spawns another agent, updates linear. But it
   shouldnt just wait"): a subagent reports to its lead with its branch and any landing id and stops; a lead watches
   that id, continues with a direct follow-on or hands off; an unattended run hands off and may start its successor.
+  A cloud session marks nothing ready: it pushes its branch, opens a draft pull request and reports, and its lead lands
+  it (machine CLAUDE.md, "Work list").
   The train posts each branch's result on its issue and to anyone waiting on it, as a landing does (machine
   CLAUDE.md, "Checks and waiting").
 - Previews, started on demand by an agent or Michael, private behind Cloudflare Access, the build only ("Branch previews
