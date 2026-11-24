@@ -49,9 +49,10 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - Claim the issue you work on, file what you find, finish with proof. Risk tiers: the rls-linear plugin's
   `rules/risk-tiers.md`.
 - Finished Risk A and B work lands on main by itself, without waiting for "land it": it is marked ready and its repo's
-  landing train lands it. Until the train is built (ROC-4676), `rls-linear land` lands a lone piece as it finishes,
-  and several finished branches in one repo go on one batch branch and land once, as the train would
-  (`rules/landing.md`).
+  landing train lands it. Where a repo's train is on (rls-linear `config/train.json`: claude-plugins first), plain
+  `rls-linear land` marks the branch ready and returns. In a repo whose train is not on yet, `rls-linear land` lands a
+  lone piece as it finishes, and several finished branches in one repo go on one batch branch and land once, as the
+  train would (`rules/landing.md`).
 - Landing runs in the background and keeps the repo's gate. A Debug build to try a change needs no check. A small Risk A
   or B fix needs no Linear issue; its commit message is the record.
 - Michael approves Risk C: contacting or charging a client, deleting his photos or video, and until he says
@@ -338,8 +339,9 @@ Michael, 2026-11-23, ROC-4676 (his answers word for word there and in machine/RU
 rule text; the train with quick landing, the daily full check and the relay's heartbeat; website previews; portal
 previews; the combined preview; design system doc site previews; Crew Console's own-device lane; the other apps.
 Until a part is built, the way it replaces stays: `rls-linear land` lands each piece as it finishes with the repo's
-current landing check, and no preview exists. The one exception is batching (Michael, 2026-11-23: "Ban we batch and of
-these landings together? we have updated rules we adapted you mauy not be following"): until the train runs, a session
+current landing check, and no preview exists. The train is on for claude-plugins (rls-linear `config/train.json`); each
+other repo keeps the rule below until its switch is on. The one exception is batching (Michael, 2026-11-23: "Ban we batch and of
+these landings together? we have updated rules we adapted you mauy not be following"): until its train runs, a session
 or lead holding several finished branches in one repo does not land them one by one. It puts them on one batch branch
 from the latest `origin/main` (each branch's commits and trailers kept), lands that once with `rls-linear land` and one
 check, and on red sends the branch at fault back to its issue as the train does and lands the rest. The per-project table is in the draft linked from ROC-4676.
@@ -351,6 +353,11 @@ at once, `--needs-main` marks it ready and runs the train now. `rls-linear train
 drives it from any Mac: `run` lands only on a signal (`--force` is "asked"), on a stack branch in a throwaway copy
 through `rls-linear land`'s own flow, so the check, the Tier C guard and the push are the same. Tier C never rides it
 (`rls-linear land --now` with Michael's yes). A freeze is `rls-linear train freeze --reason "..." --until 8h`.
+The clock: `rls-linear train tick` every 30 minutes on the laptop (rls-linear `config/com.rocketlaunchstudio.train.plist`,
+installed as a launchd agent), the Mac that holds every repo, git push and the Linear sign-in; the Worker
+cannot run git, and a Mac queue job would hold the studio Mac's one check slot while it waits on a check. Each run is recorded on
+the relay (`/health`, `train`); no run for an hour shows one line on Michael's next prompt and in the 06:45 report, and
+any session may run `rls-linear train run --force` in the repo meanwhile.
 - Levels. Working (branch commits, Debug builds, previews, builds for Michael's own devices): the build only. Landing:
   the train's check. Daily: the full check on each quick-landing repo's main, started by the relay, not GitHub's
   schedule (`rls-linear main-watch <repo>` by hand); red files one issue, fixed next, and pauses nothing ("File and fix, no pause (Recommended)"; design
