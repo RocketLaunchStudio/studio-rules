@@ -88,9 +88,13 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   background watcher that exits on every final result, restart it if it times out, and act on the result. Use the tool's
   own wait (`rls-linear mac-job --resume <id>`, `gh run watch <id> --interval 60 --exit-status`: without `--interval`
   it polls every 3 seconds and drains the shared GitHub limit, so a hook refuses it), and a `sleep` loop only where none
-  exists. If you cannot watch, put the id and the next step on the issue with `rls-linear handoff`. A `rls-linear land` or
-  `mac-job` that its hook moved to the background is its own watcher, so act on the result when it arrives; a subagent or
-  an unattended run is not moved and waits for the result itself.
+  exists. If you cannot watch, put the id and the next step on the issue with `rls-linear handoff`.
+  A landing reports itself: `rls-linear land` gives a landing id and posts its result, red or green, on the branch's
+  issue. Whoever starts one acts on its result or passes the id on, and no turn ends holding an id nobody watches. A
+  subagent puts the id in its report and stops; its lead waits with `rls-linear land --wait <id>` in the background and
+  sends a red result back to the agent that wrote the branch. A Mac job is watched the same way with `rls-linear mac-job
+  --resume <id>`. An unattended run waits for its own result, or hands off with the id. Until `land --wait` exists, a
+  subagent waits for its own landing's result before it reports, and names what is still running if it must stop first.
 - One investigator per shared problem. Before debugging a shared machine or tool (a runner, a gate), look for
   a Linear issue already held for it, and if there is one, send your findings to its holder and post them there instead
   of starting your own investigation.
@@ -372,8 +376,10 @@ Quick landing is built: `rls-linear land` runs the quick check for a repo switch
   backend and docs changes build nothing ("Build what it touches (Recommended)").
 - A finishing session marks its branch ready and never waits ("Should depend on the nature of the agent, and if its a
   leader or a subagent. Whether it hands off, continues and moves on, spawns another agent, updates linear. But it
-  shouldnt just wait"): a subagent reports to its lead and stops; a lead continues with a direct follow-on or hands
-  off; an unattended run hands off and may start its successor.
+  shouldnt just wait"): a subagent reports to its lead with its branch and any landing id and stops; a lead watches
+  that id, continues with a direct follow-on or hands off; an unattended run hands off and may start its successor.
+  The train posts each branch's result on its issue and to anyone waiting on it, as a landing does (machine
+  CLAUDE.md, "Checks and waiting").
 - Previews, started on demand by an agent or Michael, private behind Cloudflare Access, the build only ("Branch previews
   (Recommended)", "Build only", "Agent or you, on demand (Recommended)"). Web sites (Client Portal, website, the
   design system doc site, docs): one preview per branch, brought up to date with main first, plus one combined preview
