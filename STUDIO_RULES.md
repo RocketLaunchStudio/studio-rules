@@ -70,8 +70,9 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - Checks follow what a change reaches (Michael, 2026-11-23, ROC-4676: "app debug or internal testings shouldnt need
   full checks"; text approved: "Write it (Recommended)"). Branches, Debug builds, previews and builds for Michael's own
   devices need only the build. Finished work is marked ready and the session never waits for its landing. Each repo's
-  landing train, run by the relay, lands what is ready at its next 30-minute check, or at once when asked or a reader
-  needs main (2026-11-23: "Within 30 minutes (Recommended)"); never during a freeze. It runs one check on them together, and the branch at fault goes back to
+  landing train lands a branch when it is marked ready, waiting only for another branch about to be ready in the next
+  few minutes (Michael, 2026-11-24, ROC-4889: "it should go on ready"; until built, at its next 30-minute check, or at
+  once when asked or a reader needs main); never during a freeze. It runs one check on them together, and the branch at fault goes back to
   its issue. The train's check is the repo's quick check, except the whole check where a landing goes live or reaches
   every session (Client Portal, website, claude-plugins, linear-relay) and for a change to the checks themselves. Each
   quick-landing repo's full check runs daily; a red result files one issue and pauses nothing. Anything that reaches
@@ -359,9 +360,9 @@ at once, `--needs-main` marks it ready and runs the train now. `rls-linear train
 drives it from any Mac: `run` lands only on a signal (`--force` is "asked"), on a stack branch in a throwaway copy
 through `rls-linear land`'s own flow, so the check, the Tier C guard and the push are the same. Tier C never rides it
 (`rls-linear land --now` with Michael's yes). A freeze is `rls-linear train freeze --reason "..." --until 8h`.
-The clock: `rls-linear train tick` every 30 minutes on the laptop (rls-linear `config/com.rocketlaunchstudio.train.plist`,
-installed as a launchd agent), the Mac that holds every repo, git push and the Linear sign-in; the Worker
-cannot run git, and a Mac queue job would hold the studio Mac's one check slot while it waits on a check. Each run is recorded on
+The clock moves to the studio's always-on check Mac, as a plain launchd agent that takes no check slot (Michael,
+2026-11-24, ROC-4889; his words in machine/RULES-HISTORY.md). Until that is built: `rls-linear train tick` every 30 minutes on the laptop (rls-linear
+`config/com.rocketlaunchstudio.train.plist`, installed as a launchd agent). Each run is recorded on
 the relay (`/health`, `train`); no run for an hour shows one line on Michael's next prompt and in the 06:45 report, and
 any session may run `rls-linear train run --force` in the repo meanwhile; while the clock is down, marking a branch
 ready starts the train for it at once.
@@ -375,22 +376,33 @@ ready starts the train for it at once.
   (Recommended)"), and for claude-plugins and linear-relay, which reach every session ("Whole check on landing
   (Recommended)"); the quick check everywhere else, except a change to the checks themselves, which takes the full
   check.
-- When a repo's train runs (Michael, 2026-11-23: "Within 30 minutes (Recommended)", replacing "Simple signals
-  (Recommended)"'s 3 ready or 3 hours): its next 30-minute check lands whatever is ready; between checks it runs only
-  when asked or when a reader needs main. It does not run while that repo's main is red or a freeze is on; it tries
-  again at the next check. Every repo rides it ("Every repo (Recommended)"); `--now` lands
-  one branch at once for an urgent fix or a reader.
-- The relay runs it every 30 minutes and records each run ("The relay - though its health needs to be checked to make
-  sure it works"; "Heartbeat + fallback (Recommended)"). No run in 1 hour shows one line on Michael's next prompt and
-  in the morning report, and any session may run the train itself until the relay is back.
-- One check on all ready branches together; on red, halves until the branch at fault is found, then the rest land
-  ("One check, then find culprit (Recommended)"). The branch at fault goes back to its issue, set to Todo with the
-  error, for the next free session or the dispatcher ("Back to its issue (Recommended)").
+- When a repo's train runs (Michael, 2026-11-24, ROC-4889: "Instead of it being a train that arbitratily waits - it
+  should go on ready, with perhaps a process that checks other claude sessions - without interrupting them too much in
+  a way that would derail them - to assess if theres anything in the next few minutes it can batch - if not, then it
+  goes as ready"; replacing 2026-11-23 "Within 30 minutes (Recommended)"): marking a branch ready starts its repo's
+  train. It first looks, without messaging any session, for another branch in that repo about to be ready in the next
+  few minutes, and waits for it only then; it keeps landing until nothing is ready. A timer stays as a sweeper. Until
+  this is built, the next 30-minute check lands whatever is ready, and between checks it runs only when asked or when
+  a reader needs main. It does not run while that repo's main is red or a freeze is on. Every repo rides it ("Every
+  repo (Recommended)"); `--now` lands one branch at once for an urgent fix or a reader.
+- The relay records each run ("The relay - though its health needs to be checked to make sure it works"; "Heartbeat +
+  fallback (Recommended)"). No run in 1 hour shows one line on Michael's next prompt and in the morning report, and any
+  session may run the train itself meanwhile.
+- One check on the ready branches together; on red, it finds the branch at fault and the rest land ("One check, then
+  find culprit (Recommended)", 2026-11-23). Where branches need different checks, the train splits them by check level,
+  so a light branch never waits on a heavy neighbour's slow check, and it finds the branch at fault from what failed
+  and what each branch touched before halving, never re-checking code already known to fail (Michael, 2026-11-24,
+  ROC-4889: "Split by check level (Recommended)", "with a smarter approach, research ways we can make the appraoch
+  quicker and based on more relevant insight"; until built, plain halving). The branch at fault goes back to its issue,
+  set to Todo with the error, for the next free session or the dispatcher ("Back to its issue (Recommended)").
   Client Portal's train lands its ready pull requests one at a time, in order, each with its own whole check, since
   its "CI passed" and the email and charge guards judge each pull request ("One at a time (Recommended)").
 - A freeze is turned on by the session leading the risky step, with one command naming the repo, the reason and an
   end time; it shows on the issue and in the morning report and lifts at the end time unless renewed. Michael can
   also say "freeze <repo>" in chat ("The leading session (Recommended)").
+- RLS Demo is an internal tool only, to be folded into the design system; its landing takes much quicker checks than
+  today's full gate on every pull request (Michael, 2026-11-24, ROC-4889: "Undeerstand also that is is exclusively an
+  internal tool - so that it can go through much quicker checks"). Until its review lands, its current gate stays.
 - Crew Console's quick check is lint, the agent doctor and a Debug build of only the targets a change touches;
   backend and docs changes build nothing ("Build what it touches (Recommended)").
 - A finishing session marks its branch ready and never waits ("Should depend on the nature of the agent, and if its a
