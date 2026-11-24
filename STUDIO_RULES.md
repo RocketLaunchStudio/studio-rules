@@ -52,7 +52,7 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   landing train lands it. Where a repo's train is on (rls-linear `config/train.json`: claude-plugins first), plain
   `rls-linear land` marks the branch ready and returns. In a repo whose train is not on yet, `rls-linear land` lands a
   lone piece as it finishes, and several finished branches in one repo go on one batch branch and land once, as the
-  train would (`rules/landing.md`). A cloud session (`CLAUDE_CODE_REMOTE=true`) never lands: it never merges, arms
+  train would (the Client Portal's land one at a time) (`rules/landing.md`). A cloud session (`CLAUDE_CODE_REMOTE=true`) never lands: it never merges, arms
   auto-merge, marks work ready or runs a workflow; it pushes its branch, opens a draft pull request and reports, and
   its lead lands it.
 - Landing runs in the background and keeps the repo's gate. A Debug build to try a change needs no check. A small Risk A
@@ -93,12 +93,12 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   own wait (`rls-linear mac-job --resume <id>`, `gh run watch <id> --interval 60 --exit-status`: without `--interval`
   it polls every 3 seconds and drains the shared GitHub limit, so a hook refuses it), and a `sleep` loop only where none
   exists. If you cannot watch, put the id and the next step on the issue with `rls-linear handoff`.
-  A landing reports itself: `rls-linear land` gives a landing id and posts its result, red or green, on the branch's
-  issue. Whoever starts one acts on its result or passes the id on, and no turn ends holding an id nobody watches. A
-  subagent puts the id in its report and stops; its lead waits with `rls-linear land --wait <id>` in the background and
-  sends a red result back to the agent that wrote the branch. A Mac job is watched the same way with `rls-linear mac-job
-  --resume <id>`. An unattended run waits for its own result, or hands off with the id. Until `land --wait` exists, a
-  subagent waits for its own landing's result before it reports, and names what is still running if it must stop first.
+  A landing reports itself: `rls-linear land`, or the train where a repo's train is on, posts its result, red or
+  green, on the branch's issue, and a red result sends the branch back to it. A session that marks a branch ready
+  never waits: a subagent reports its branch and stops, a lead continues or hands off. A brief for work in a repo whose
+  train is on says only that plain `rls-linear land` marks the branch ready and the agent does not wait, in place of
+  the landing check copied from the checks skill. A Mac job is still watched with `rls-linear mac-job --resume <id>`
+  (Michael, 2026-11-24, ROC-4889: "Yes, never wait (Recommended)", "Yes, shorter briefs (Recommended)").
 - One investigator per shared problem. Before debugging a shared machine or tool (a runner, a gate), look for
   a Linear issue already held for it, and if there is one, send your findings to its holder and post them there instead
   of starting your own investigation.
@@ -128,10 +128,7 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   typing in hands off when its piece lands, and may start its own fresh successor from the printed brief where a tool
   to start a session exists, then stops (Michael, 2026-11-18, ROC-3917: "Hand off at boundaries (Recommended)";
   2026-11-22, "Every session"; 2026-11-22, handoff audit: "Yes, rewrite it (Recommended)").
-  The hooks: a landing in a session Michael types in adds one line to his next prompt, with no stop ("One line on
-  your next prompt (Recommended)"); unattended runs get no nudge, and sessions another session started get one
-  only when they have not handed off ("Unattended exempt (Recommended)"); the request count is retired for a line
-  after each compaction ("After a compaction (Recommended)"); any nudge shows as hook feedback, not an error.
+  How the hooks nudge a handoff, with Michael's answers: the linear skill's `references/handing-off.md`.
 - Anything a second session needs (a contract, a spec, a check script, a fixture) goes in the repo and is pushed the
   day it is written, never only in a scratch, temp or notes folder that ends with the session. Evidence dumps, tool
   output, logs, renders and one-off research code are not such things: they go to the shared evidence folder or the NAS
@@ -188,7 +185,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 
 ## Landing and worktrees
 - Before pushing, confirm three things: the branch is up to date with `origin/main`, the project's check passes on that
-  exact state (green `mac-gate` / `mac-app` commit status, or the repo's own GitHub check where it has no Mac job), and
+  exact state (its landing check, "The landing train and previews" below: the quick check where the repo lands on quick,
+  else green `mac-gate` / `mac-app` commit status, or the repo's own GitHub check where it has no Mac job), and
   `git log origin/main..HEAD` holds only your commits. Then land and push without asking.
 - Commit between landings, push only when something needs the branch on GitHub (a handoff, another session, or the
   end of a session that leaves work unlanded), land once per piece (machine CLAUDE.md "Checks and waiting", ROC-3342;
@@ -208,34 +206,9 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   `python3 scripts/ds_register.py regen`, which takes main's copy of generated files, keeps both sides of append-only
   ledgers and reruns the generators); `land` runs it, continues the rebase, and the result always takes one full check.
   Where GitHub requires status checks on main (branch protection or a ruleset), the landed commit needs those checks
-  green on it: a clean rebase keeps its pass there only as the next bullet but one says. In every repo the full check runs without the landing turn: `land` takes the
-  turn to rebase onto current `origin/main`, decide, run the landing checks and push, and lets it go while a full
-  check runs (Michael, 2026-11-17, ROC-3768: "Free the line - we need to investigate into why the design system holds
-  up everything and what is and isn't necessary"; this replaces the 2026-11-14 hold through the check, ROC-3342).
-  The design system and the website also take a GitHub landing turn (the branch `land-turn/main`, each repo's own
-  `scripts/land_turn.py`, `SHARED_TURN_REPOS` in `land.py`), so a landing from a cloud thread, another Mac or the Desk
-  recorder waits instead of moving main under it. The website holds it for the whole landing, full check included
-  (Michael, 2026-11-19, on the decision card "Hold the landing line during checks for the design system and
-  website?": "Hold it for those two repos"). The design system holds it only to rebase, decide, run the landing
-  checks and push, and lets it go while `verify` and `mac` run; afterwards it takes the turn again, and if main moved
-  it rebases and keeps the pass under the clean-rebase rule below, else takes one more full check and holds the
-  turn through that one, so it always lands and no landing needs a third; the short wait for GitHub's checks on a
-  kept pass (about a minute and a half) holds the turn too, so the kept pass is pushed before main can move again (Michael, 2026-11-22, ROC-4585, asked "Should a design system landing let go of the turn while its check
-  runs? I recommend yes": "go ahead as recommended"; this replaces his 2026-11-19 hold for the design system only).
-  Main still moves only by a push made under the turn, by fast-forward, to a commit with green `verify` and `mac`.
-  In the design system the turn is first come, first served: each taker waits on its own `land-turn/wait/` branch
-  and a free turn goes to the oldest waiter still alive (ROC-4585).
-  When main moved during the check, the next turn rebases and checks again only when main's new commits touch the
-  branch's files, change how the check itself runs (CI workflows, dependency lockfiles, the gate's own config:
-  `RECHECK_ALWAYS` in `land.py`), the patch changed, or main requires its checks on the exact commit; otherwise the
-  green check is reused under the rule below. Main never moves without a green check on the exact commit pushed. A rebase conflict `land` cannot resolve, and a landing given up because main
-  kept moving (two full checks, then a third needed), go on the failure ledger (ROC-3253) as environment failures; the
-  limit stays at two full checks, and after a week with the Crew rule below in place the give-ups are counted again
-  before anything else changes (Michael, 2026-11-14, ROC-3280: "Stop, log it, measure"). Every run (not a dry run) also
-  records its start, each round (rule, check, seconds waiting for the turn and the check) and its outcome in the
-  Mac's shared timing log, `rls-land/timings/<user>-<YYYY-MM>.jsonl` (ROC-3275), alongside those ledger notes;
-  `rls-linear land --report [days]` prints landing p50 and p90 per repo and the give-ups, and the morning repeat report
-  (`repeats.py`) counts give-ups and rebase conflicts as repeats.
+  green on it: a clean rebase keeps its pass there only as the next bullet but one says. How `land` takes and lets go of the repo's landing turn, rechecks when main moved, gives up and records its
+  timings: `rules/landing-turn.md` (read it when a landing waits for the turn, gives up, rechecks or you land by
+  hand).
 - Rebase on `origin/main` first, then run the full check once on that exact commit, the one being landed, never on
   earlier commits of the branch (Michael, 2026-11-14, ROC-3240: "All nine, as ranked", approving the pipeline redundancy audit) (the portal's check runs on its pull
   request), then push or open the pull request; a rebase after the full check wastes it. After a rebase that touched
@@ -351,7 +324,9 @@ rls-gate edits take the quick check too (Michael, 2026-11-23: "Quick + daily ful
 these landings together? we have updated rules we adapted you mauy not be following"): until its train runs, a session
 or lead holding several finished branches in one repo does not land them one by one. It puts them on one batch branch
 from the latest `origin/main` (each branch's commits and trailers kept), lands that once with `rls-linear land` and one
-check, and on red sends the branch at fault back to its issue as the train does and lands the rest. The per-project table is in the draft linked from ROC-4676.
+check, and on red sends the branch at fault back to its issue as the train does and lands the rest. The Client Portal is
+the exception: its pull requests land one at a time, each with its own whole check, as its train will ("One at a time
+(Recommended)", below). The per-project table is in the draft linked from ROC-4676.
 Quick landing is built: `rls-linear land` runs the quick check for a repo switched on in rls-linear's
 `config/quick-landing.json` (check files: `config/gate-files.json`), and its dry run and report name the check and why.
 The train is built and switched on per repo in rls-linear's `config/train.json`. Where it is on, plain `rls-linear land`
@@ -381,7 +356,8 @@ ready starts the train for it at once.
   a way that would derail them - to assess if theres anything in the next few minutes it can batch - if not, then it
   goes as ready"; replacing 2026-11-23 "Within 30 minutes (Recommended)"): marking a branch ready starts its repo's
   train. It first looks, without messaging any session, for another branch in that repo about to be ready in the next
-  few minutes, and waits for it only then; it keeps landing until nothing is ready. A timer stays as a sweeper. Until
+  few minutes, and waits for it only then, at most 3 minutes ("Up to 3 minutes (Recommended)"); it keeps landing until
+  nothing is ready. A timer stays as a sweeper. Until
   this is built, the next 30-minute check lands whatever is ready, and between checks it runs only when asked or when
   a reader needs main. It does not run while that repo's main is red or a freeze is on. Every repo rides it ("Every
   repo (Recommended)"); `--now` lands one branch at once for an urgent fix or a reader.
@@ -395,6 +371,16 @@ ready starts the train for it at once.
   ROC-4889: "Split by check level (Recommended)", "with a smarter approach, research ways we can make the appraoch
   quicker and based on more relevant insight"; until built, plain halving). The branch at fault goes back to its issue,
   set to Todo with the error, for the next free session or the dispatcher ("Back to its issue (Recommended)").
+- Who owns a piece after it is marked ready (Michael, 2026-11-24, ROC-4889 and ROC-4901): marking ready releases the
+  claim, and a send-back always sets the issue to Todo with the error and tells the session that marked it, except a
+  parent issue held by another live session ("Release and Todo (Recommended)", replacing the agent-made 2026-11-24 rule
+  that a claim under a day old keeps the state). The session proves each Done-when line when it marks ready, or names
+  what waits on a date or a measurement, and the train closes the issue at landing when that proof covers every line
+  and its own check passed, never for Risk C ("Train closes on proof (Recommended)"). At landing the train also sets
+  every other state itself: Blocked with a `Waiting on:` line for a date or measurement, Todo for work left; nothing
+  waits on Michael alone ("Train sets it - nothing should wait on me exclusively. Allow agents to fully control that
+  process, I never really open the items myself in linear."). Until this is built, the session that did the work
+  proves and closes it, and releases its claim when it marks ready.
   Client Portal's train lands its ready pull requests one at a time, in order, each with its own whole check, since
   its "CI passed" and the email and charge guards judge each pull request ("One at a time (Recommended)").
 - A freeze is turned on by the session leading the risky step, with one command naming the repo, the reason and an
@@ -402,13 +388,17 @@ ready starts the train for it at once.
   also say "freeze <repo>" in chat ("The leading session (Recommended)").
 - RLS Demo is an internal tool only, to be folded into the design system; its landing takes much quicker checks than
   today's full gate on every pull request (Michael, 2026-11-24, ROC-4889: "Undeerstand also that is is exclusively an
-  internal tool - so that it can go through much quicker checks"). Until its review lands, its current gate stays.
+  internal tool - so that it can go through much quicker checks"). It lands on its own train now, without a pull
+  request, on a quick check (static checks, a Debug build of both apps, tests of the packages a change touches); its
+  full gate and launch check run nightly and before TestFlight builds, and main stops requiring the gate ("Quick land,
+  full nightly (Recommended)", "Own train now (Recommended)"). After the fold it rides the design system's train in
+  its own lane. Until this is built, its current gate stays.
 - Crew Console's quick check is lint, the agent doctor and a Debug build of only the targets a change touches;
   backend and docs changes build nothing ("Build what it touches (Recommended)").
 - A finishing session marks its branch ready and never waits ("Should depend on the nature of the agent, and if its a
   leader or a subagent. Whether it hands off, continues and moves on, spawns another agent, updates linear. But it
-  shouldnt just wait"): a subagent reports to its lead with its branch and any landing id and stops; a lead watches
-  that id, continues with a direct follow-on or hands off; an unattended run hands off and may start its successor.
+  shouldnt just wait"; 2026-11-24, ROC-4889: "Yes, never wait (Recommended)"): a subagent reports to its lead with its
+  branch and stops; a lead continues with a direct follow-on or hands off; an unattended run hands off and may start its successor.
   A cloud session marks nothing ready: it pushes its branch, opens a draft pull request and reports, and its lead lands
   it (machine CLAUDE.md, "Work list").
   The train posts each branch's result on its issue and to anyone waiting on it, as a landing does (machine
@@ -463,7 +453,8 @@ Moved word for word from machine/CLAUDE.md, "Git: several sessions share each re
 ## Changing the rules: the procedure
 - When Michael changes a rule in chat, write it into its file (plugin, CLAUDE.md or skill) before acting on it, add his
   exact words and the date to `machine/RULES-HISTORY.md` for a rule in machine/CLAUDE.md, in the files holding text moved out of it
-  (`rules/landing.md`, `deploys.md`, `folders.md`, `changing-the-rules.md`, `models.md`) or in the macs skill, record his exact words on every issue it decides with `rls-linear comment`,
+  (`rules/landing.md`, `landing-turn.md`, `deploys.md`, `folders.md`, `changing-the-rules.md`, `models.md`), in the macs skill
+  or in the linear skill's `references/handing-off.md`, record his exact words on every issue it decides with `rls-linear comment`,
   and say which sessions must restart: a session keeps the text it loaded at start.
 - Agents never make a rule on their own conclusion. His words in chat apply at once. To propose a new or changed rule,
   ask him in chat right then with the proposed text, the file, why, and your recommendation, so he can approve it at
