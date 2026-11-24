@@ -334,6 +334,8 @@ rule text; the train with quick landing, the daily full check and the relay's he
 previews; the combined preview; design system doc site previews; Crew Console's own-device lane; the other apps.
 Until a part is built, the way it replaces stays: `rls-linear land` lands each piece as it finishes with the repo's
 current landing check, and no preview exists. The per-project table is in the draft linked from ROC-4676.
+Quick landing is built: `rls-linear land` runs the quick check for a repo switched on in rls-linear's
+`config/quick-landing.json` (check files: `config/gate-files.json`), and its dry run and report name the check and why.
 - Levels. Working (branch commits, Debug builds, previews, builds for Michael's own devices): the build only. Landing:
   the train's check. Daily: the full check on each quick-landing repo's main, started by the relay, not GitHub's
   schedule (`rls-linear main-watch <repo>` by hand); red files one issue, fixed next, and pauses nothing ("File and fix, no pause (Recommended)"; design
