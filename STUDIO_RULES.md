@@ -270,9 +270,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   that app. So a repo takes this rule only when its workflows carry the reuse themselves (the design system's
   `scripts/ci-rebase-reuse.mjs`, ROC-3771) and that script, read from `origin/main`, agrees with `land`; a repo
   without it (the website, for now) and any doubt take a full check on the rebased commit, as before. A reuse round
-  is not counted toward the two full checks. Main's own check after the push stays the backstop: after a landing
-  that kept a pass this way, `land` starts the repo's full `verify` on main and, when it fails, notes the red main on
-  the failure ledger (ROC-3253) at once. A push to a `claude/` branch starts no CI in a repo whose
+  is not counted toward the two full checks. The daily full check on main (`rls-linear main-watch`, see "The landing train and previews") is the check after the push. A push to a
+  `claude/` branch starts no CI in a repo whose
   workflows trigger on `land/**` instead (Michael, 2026-11-17, every repo: "Yes, stop it"; ROC-3735): `land` also pushes
   the commit it checks to a new ref `land/<branch>/<sha12>` (never forced) and its checks run on that push. Not
   workflow_dispatch: main's protection does not count a dispatched run's checks.
