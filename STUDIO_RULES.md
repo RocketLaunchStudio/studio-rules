@@ -288,8 +288,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   where it is. What lands is only what was committed when the check ran. Two cases still stop a landing; land names
   the files, changes nothing, and you commit or finish the edits and land again:
   - main changed a file you have uncommitted edits to, so moving the branch would overwrite them;
-  - the repo's quick command runs in your worktree (claude-plugins, Studio Companion, Edit Buddy, Asset Flow and the
-    studio board; Crew Console and the design system have none) and you have uncommitted edits when it would start,
+  - the repo's quick command runs in your worktree (claude-plugins, Studio Companion, Edit Buddy, Asset Flow, the
+    studio board, and Crew Console's `crew quick-land` on a quick landing; the design system has none) and you have uncommitted edits when it would start,
     or edit or commit while it runs. Its result would test your edits, not the commit being landed, so it never
     counts (ROC-3612).
 - `land` refuses a branch that puts files back the way they were before a recent main commit, which is what a
