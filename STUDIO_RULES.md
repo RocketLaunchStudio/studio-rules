@@ -357,7 +357,8 @@ The clock: `rls-linear train tick` every 30 minutes on the laptop (rls-linear `c
 installed as a launchd agent), the Mac that holds every repo, git push and the Linear sign-in; the Worker
 cannot run git, and a Mac queue job would hold the studio Mac's one check slot while it waits on a check. Each run is recorded on
 the relay (`/health`, `train`); no run for an hour shows one line on Michael's next prompt and in the 06:45 report, and
-any session may run `rls-linear train run --force` in the repo meanwhile.
+any session may run `rls-linear train run --force` in the repo meanwhile; while the clock is down, marking a branch
+ready starts the train for it at once.
 - Levels. Working (branch commits, Debug builds, previews, builds for Michael's own devices): the build only. Landing:
   the train's check. Daily: the full check on each quick-landing repo's main, started by the relay, not GitHub's
   schedule (`rls-linear main-watch <repo>` by hand); red files one issue, fixed next, and pauses nothing ("File and fix, no pause (Recommended)"; design
