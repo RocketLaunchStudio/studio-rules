@@ -70,8 +70,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - Checks follow what a change reaches (Michael, 2026-11-23, ROC-4676: "app debug or internal testings shouldnt need
   full checks"; text approved: "Write it (Recommended)"). Branches, Debug builds, previews and builds for Michael's own
   devices need only the build. Finished work is marked ready and the session never waits for its landing. Each repo's
-  landing train, run by the relay, lands ready branches when asked, when 3 are ready, when one has waited 3 hours or a
-  reader needs main; never during a freeze. It runs one check on them together, and the branch at fault goes back to
+  landing train, run by the relay, lands what is ready at its next 30-minute check, or at once when asked or a reader
+  needs main (2026-11-23: "Within 30 minutes (Recommended)"); never during a freeze. It runs one check on them together, and the branch at fault goes back to
   its issue. The train's check is the repo's quick check, except the whole check where a landing goes live or reaches
   every session (Client Portal, website, claude-plugins, linear-relay) and for a change to the checks themselves. Each
   quick-landing repo's full check runs daily; a red result files one issue and pauses nothing. Anything that reaches
@@ -343,7 +343,10 @@ rule text; the train with quick landing, the daily full check and the relay's he
 previews; the combined preview; design system doc site previews; Crew Console's own-device lane; the other apps.
 Until a part is built, the way it replaces stays: `rls-linear land` lands each piece as it finishes with the repo's
 current landing check, and no preview exists. The train is on for the repos rls-linear `config/train.json` lists (claude-plugins,
-the Swift kit, Crew Console and the design system); each other repo keeps the rule below until its switch is on. The one exception is batching (Michael, 2026-11-23: "Ban we batch and of
+the Swift kit, Crew Console and the design system); each other repo keeps the rule below until its switch is on. The
+Swift kit lands on its quick script checks, its full Mac check nightly and before each kit release, and its guard and
+rls-gate edits take the quick check too (Michael, 2026-11-23: "Quick + daily full (Recommended)", "No, quick is enough
+(Recommended)"; rls-linear `config/quick-landing.json`). The one exception is batching (Michael, 2026-11-23: "Ban we batch and of
 these landings together? we have updated rules we adapted you mauy not be following"): until its train runs, a session
 or lead holding several finished branches in one repo does not land them one by one. It puts them on one batch branch
 from the latest `origin/main` (each branch's commits and trailers kept), lands that once with `rls-linear land` and one
@@ -372,11 +375,10 @@ ready starts the train for it at once.
   (Recommended)"), and for claude-plugins and linear-relay, which reach every session ("Whole check on landing
   (Recommended)"); the quick check everywhere else, except a change to the checks themselves, which takes the full
   check.
-- When a repo's train runs ("Batched a few times a day (Recommended)": "Plus upon request and a few times a day - based
-  on activity - dont force a trigger on a time if it isnt an opportune time - make sure it can adapt"; "Simple signals
-  (Recommended)"): when asked, when 3 or more branches are ready, when the oldest ready branch has waited 3 hours, or
-  when a reader needs main. It does not run while that repo's main is red, a freeze is on or its runners are busy; it
-  tries again in 30 minutes. Never on a clock alone. Every repo rides it ("Every repo (Recommended)"); `--now` lands
+- When a repo's train runs (Michael, 2026-11-23: "Within 30 minutes (Recommended)", replacing "Simple signals
+  (Recommended)"'s 3 ready or 3 hours): its next 30-minute check lands whatever is ready; between checks it runs only
+  when asked or when a reader needs main. It does not run while that repo's main is red or a freeze is on; it tries
+  again at the next check. Every repo rides it ("Every repo (Recommended)"); `--now` lands
   one branch at once for an urgent fix or a reader.
 - The relay runs it every 30 minutes and records each run ("The relay - though its health needs to be checked to make
   sure it works"; "Heartbeat + fallback (Recommended)"). No run in 1 hour shows one line on Michael's next prompt and
