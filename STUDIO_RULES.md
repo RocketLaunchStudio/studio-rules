@@ -345,7 +345,7 @@ Until a part is built, the way it replaces stays: `rls-linear land` lands each p
 current landing check, and no preview exists. The train is on for the repos rls-linear `config/train.json` lists (claude-plugins,
 the Swift kit, Crew Console and the design system); each other repo keeps the rule below until its switch is on. The
 Swift kit lands on its quick script checks, its full Mac check nightly and before each kit release, and its guard and
-rls-gate edits take the quick check too (Michael, 2026-11-23: "Quick + daily full (Recommended)", "No, quick is enough
+rls-gate edits take the quick check once its hook tests are in it (until then the full check) (Michael, 2026-11-23: "Quick + daily full (Recommended)", "No, quick is enough
 (Recommended)"; rls-linear `config/quick-landing.json`). The one exception is batching (Michael, 2026-11-23: "Ban we batch and of
 these landings together? we have updated rules we adapted you mauy not be following"): until its train runs, a session
 or lead holding several finished branches in one repo does not land them one by one. It puts them on one batch branch
