@@ -345,6 +345,12 @@ from the latest `origin/main` (each branch's commits and trailers kept), lands t
 check, and on red sends the branch at fault back to its issue as the train does and lands the rest. The per-project table is in the draft linked from ROC-4676.
 Quick landing is built: `rls-linear land` runs the quick check for a repo switched on in rls-linear's
 `config/quick-landing.json` (check files: `config/gate-files.json`), and its dry run and report name the check and why.
+The train is built and switched on per repo in rls-linear's `config/train.json`. Where it is on, plain `rls-linear land`
+pushes the branch and marks that commit ready on GitHub (`refs/ready/<branch>`), then returns; `--now` lands one branch
+at once, `--needs-main` marks it ready and runs the train now. `rls-linear train status|run|freeze|unfreeze` reads and
+drives it from any Mac: `run` lands only on a signal (`--force` is "asked"), on a stack branch in a throwaway copy
+through `rls-linear land`'s own flow, so the check, the Tier C guard and the push are the same. Tier C never rides it
+(`rls-linear land --now` with Michael's yes). A freeze is `rls-linear train freeze --reason "..." --until 8h`.
 - Levels. Working (branch commits, Debug builds, previews, builds for Michael's own devices): the build only. Landing:
   the train's check. Daily: the full check on each quick-landing repo's main, started by the relay, not GitHub's
   schedule (`rls-linear main-watch <repo>` by hand); red files one issue, fixed next, and pauses nothing ("File and fix, no pause (Recommended)"; design
