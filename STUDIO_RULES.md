@@ -342,8 +342,8 @@ Michael, 2026-11-23, ROC-4676 (his answers word for word there and in machine/RU
 rule text; the train with quick landing, the daily full check and the relay's heartbeat; website previews; portal
 previews; the combined preview; design system doc site previews; Crew Console's own-device lane; the other apps.
 Until a part is built, the way it replaces stays: `rls-linear land` lands each piece as it finishes with the repo's
-current landing check, and no preview exists. The train is on for claude-plugins (rls-linear `config/train.json`); each
-other repo keeps the rule below until its switch is on. The one exception is batching (Michael, 2026-11-23: "Ban we batch and of
+current landing check, and no preview exists. The train is on for the repos rls-linear `config/train.json` lists (claude-plugins,
+the Swift kit, Crew Console and the design system); each other repo keeps the rule below until its switch is on. The one exception is batching (Michael, 2026-11-23: "Ban we batch and of
 these landings together? we have updated rules we adapted you mauy not be following"): until its train runs, a session
 or lead holding several finished branches in one repo does not land them one by one. It puts them on one batch branch
 from the latest `origin/main` (each branch's commits and trailers kept), lands that once with `rls-linear land` and one
