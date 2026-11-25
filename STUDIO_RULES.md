@@ -405,8 +405,12 @@ ready starts the train for it at once.
   and its own check passed, never for Risk C ("Train closes on proof (Recommended)"). At landing the train also sets
   every other state itself: Blocked with a `Waiting on:` line for a date or measurement, Todo for work left; nothing
   waits on Michael alone ("Train sets it - nothing should wait on me exclusively. Allow agents to fully control that
-  process, I never really open the items myself in linear."). Until this is built, the session that did the work
-  proves and closes it, and releases its claim when it marks ready.
+  process, I never really open the items myself in linear."). Built 2026-11-25 (ROC-4901, ROC-4867,
+  ROC-4869): `rls-linear land --proof "1=...; 2=landing" --waiting-on "3: <what>"` stores the proof on the ready mark,
+  which moves the issue to In Review and releases the claim; the train closes, blocks or sets Todo at landing and sends
+  a send-back to Todo addressed to the session on the mark; a sent-back commit is marked again only with `--again
+  "<why>"`; `rls-linear train status` and the morning report list send-backs not on main (the linear skill's
+  `references/finish-and-git.md`). A mark with no proof lands to Todo for the next session to prove.
   Client Portal's train lands its ready pull requests one at a time, in order, each with its own whole check, since
   its "CI passed" and the email and charge guards judge each pull request ("One at a time (Recommended)").
 - A freeze is turned on by the session leading the risky step, with one command naming the repo, the reason and an
@@ -552,10 +556,15 @@ Moved word for word from machine/CLAUDE.md, "Git: several sessions share each re
   by default, and a kind of work kept on Opus moves to Sonnet only through a new measured trial, never a session's
   own judgement.
 - Effort for subagents: every Agent call passes `effort`, whatever its model, and so does every agent() call in a
-  Workflow script. A line in the brief does not set it: without the parameter the agent runs at its usual effort, which
-  for Opus subagents was high on 90% of requests in the week to 2026-11-24 (`docs/token-spend/effort-2026-11.md`). The
-  rls-linear Agent hook refuses a call that passes none, except a fork, a web-fetch agent or an agent whose own file
-  pins `effort:` (Michael, 2026-11-24, ROC-5013: "Yes, write it (Recommended)"). Low for lookups and sweeps; medium for work from a decided spec; high for bug fixes and anything
-  with edge cases. Opus review, check and audit agents run at high until a trial compares medium with high. `max` is
-  not used without a measured reason. High wrote about 10% more output per request than medium in a week of
-  transcripts, roughly 2% more cost: it buys care, it is not a savings lever.
+  Workflow script. A line in the brief does not set it: without the parameter the agent runs at its usual effort,
+  which for Opus subagents was high on 90% of requests in the week to 2026-11-24
+  (`docs/token-spend/effort-2026-11.md`). The rls-linear Agent hook refuses a call that passes none, except a fork, a
+  web-fetch agent or an agent whose own file pins `effort:` (Michael, 2026-11-24, ROC-5013: "Yes, write it
+  (Recommended)"). Low for lookups and sweeps; medium for work from a decided spec; high for bug fixes and anything
+  with edge cases. Opus review agents run at medium; check and audit agents stay at high until a trial covers them. A
+  review that a decision on money, email, sign-in, client data, gates or hooks rests on gets two independent Opus
+  reviewers at medium instead of one at high, and the lead merges their findings (Michael, 2026-11-25, ROC-5026: "Yes,
+  write it (Recommended)"; trial: `docs/token-spend/trial-review-effort-2026-11.md`, medium found 81% of confirmed
+  findings against 63% at high, at 65% of the cost). `max` is not used without a measured reason. High wrote about 10%
+  more output per request than medium in a week of transcripts, roughly 2% more cost: it buys care, it is not a
+  savings lever.
