@@ -119,7 +119,11 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   `Open:` when work remains. Hand off with `rls-linear handoff`; pick up with `rls-linear pickup`.
 - Hand off at boundaries. A session hands off when Michael changes topic, asks for it, or after a compaction at the
   end of a piece (the rls-linear hooks say when). A direct follow-on (the same issue or its next step, in the same
-  repo) continues in the same session. After a landing with Michael present, the report says "landed" in one line and
+  repo) continues in the same session, except in a session that has run 24 hours, or been compacted 3 times, since it
+  last loaded its hooks (its start or a resume): it hands off at the end of the piece in hand even when the next piece
+  follows on, and where Michael is typing it recommends the fresh session and carries on if he prefers. A session
+  keeps the hooks and skills it loaded; the rules files reload at each compaction (Michael, 2026-11-24, ROC-5013:
+  "Yes, write it (Recommended)"). After a landing with Michael present, the report says "landed" in one line and
   the session does not stop. To hand off, the session writes its handoff (`rls-linear handoff` and the commit
   trailers; work with no issue and no commits uses `rls-linear handoff --new`) and offers the next piece as a session
   card from the brief the handoff prints (fresh, never a fork, the model and effort `rules/models.md` picks); where no
@@ -151,8 +155,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   review, risky changes, design inside an existing system, root-cause investigations and architecture calls.
 - Fable is off by default for now because of cost. Use it only when the person asks, or when Opus has already tried the
   same job and fallen short; say which in the brief.
-- The rls-linear Agent hook refuses a subagent whose model is not named or whose brief does not open with the line
-  `Model: <name>, because <reason>`, or a started session whose model and effort are not named, and says what is
+- The rls-linear Agent hook refuses a subagent whose call does not pass `model` and `effort` or whose brief does not
+  open with the line `Model: <name>, because <reason>`, or a started session whose model and effort are not named, and says what is
   missing. Full rule: `rules/models.md`.
 
 ## Truth and the person's screen
@@ -547,8 +551,11 @@ Moved word for word from machine/CLAUDE.md, "Git: several sessions share each re
   The lead names the escalation in its report. A kind of work that escalates more than 1 time in 5 goes back to Opus
   by default, and a kind of work kept on Opus moves to Sonnet only through a new measured trial, never a session's
   own judgement.
-- Effort for subagents: a subagent on a different model from its parent does not take the session's effort, so every
-  brief names it. Low for lookups and sweeps; medium for work from a decided spec; high for bug fixes and anything
+- Effort for subagents: every Agent call passes `effort`, whatever its model, and so does every agent() call in a
+  Workflow script. A line in the brief does not set it: without the parameter the agent runs at its usual effort, which
+  for Opus subagents was high on 90% of requests in the week to 2026-11-24 (`docs/token-spend/effort-2026-11.md`). The
+  rls-linear Agent hook refuses a call that passes none, except a fork, a web-fetch agent or an agent whose own file
+  pins `effort:` (Michael, 2026-11-24, ROC-5013: "Yes, write it (Recommended)"). Low for lookups and sweeps; medium for work from a decided spec; high for bug fixes and anything
   with edge cases. Opus review, check and audit agents run at high until a trial compares medium with high. `max` is
   not used without a measured reason. High wrote about 10% more output per request than medium in a week of
   transcripts, roughly 2% more cost: it buys care, it is not a savings lever.
