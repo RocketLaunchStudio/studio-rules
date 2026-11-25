@@ -346,7 +346,9 @@ ready starts the train for it at once.
   schedule (`rls-linear main-watch <repo>` by hand); red files one issue, fixed next, and pauses nothing ("File and fix, no pause (Recommended)"; design
   system: "Daily + before kit release (Recommended)"). Reaches clients, crew or the public (a production deploy or
   promotion, a kit release, TestFlight beyond Michael's own group, the App Store, a production migration): the full
-  check green on that exact commit.
+  check green on that exact commit. Where a repo names a full check on main (config/train.json `fullCheckWorkflow`:
+  the design system), `rls-linear land` also starts it after every quick-mode landing that touches code, the train's
+  and `land --now` alike, one at a time (ROC-4953; Michael, 2026-11-24: "Write it (Recommended)").
 - The train's check: the whole check for Client Portal and the website, whose landings go live ("Full check on landing
   (Recommended)"), and for claude-plugins and linear-relay, which reach every session ("Whole check on landing
   (Recommended)"); the quick check everywhere else, except a change to the checks themselves, which takes the full
@@ -357,9 +359,8 @@ ready starts the train for it at once.
   goes as ready"; replacing 2026-11-23 "Within 30 minutes (Recommended)"): marking a branch ready starts its repo's
   train. It first looks, without messaging any session, for another branch in that repo about to be ready in the next
   few minutes, and waits for it only then, at most 3 minutes ("Up to 3 minutes (Recommended)"); it keeps landing until
-  nothing is ready. A timer stays as a sweeper. Until
-  this is built, the next 30-minute check lands whatever is ready, and between checks it runs only when asked or when
-  a reader needs main. It does not run while that repo's main is red or a freeze is on. Every repo rides it ("Every
+  nothing is ready. A timer stays as a sweeper. At most one run and one waiting run per repo; a mark made while one
+  waits starts nothing (ROC-4948). It does not run while a freeze is on. Every repo rides it ("Every
   repo (Recommended)"); `--now` lands one branch at once for an urgent fix or a reader.
 - The relay records each run ("The relay - though its health needs to be checked to make sure it works"; "Heartbeat +
   fallback (Recommended)"). No run in 1 hour shows one line on Michael's next prompt and in the morning report, and any
@@ -369,8 +370,29 @@ ready starts the train for it at once.
   so a light branch never waits on a heavy neighbour's slow check, and it finds the branch at fault from what failed
   and what each branch touched before halving, never re-checking code already known to fail (Michael, 2026-11-24,
   ROC-4889: "Split by check level (Recommended)", "with a smarter approach, research ways we can make the appraoch
-  quicker and based on more relevant insight"; until built, plain halving). The branch at fault goes back to its issue,
+  quicker and based on more relevant insight"). The names of a check's own runner scripts in a failure are no
+  evidence against the branches that edit them (config/train.json `runnerFiles`). The branch at fault goes back to its issue,
   set to Todo with the error, for the next free session or the dispatcher ("Back to its issue (Recommended)").
+- When main itself is red (ROC-4944, ROC-4953) (Michael, 2026-11-24, ROC-4889: "Write it (Recommended)"). A repo whose full check posts a commit status on main (config/train.json
+  `fullCheckStatus`; the design system's `full-check`) is judged by that status. A red seen once is run again first and
+  landings go on meanwhile; a red on two commits since the last green, or twice on one commit, is confirmed. While it
+  is confirmed, nobody is sent back for a failure main also has, and only needs-main branches and branches touching
+  what it fails on land, each alone and ahead of any halving; every other ready branch waits and stays ready.
+- One fixer for a red main (ROC-4951) (Michael, 2026-11-24, ROC-4889: "Write it (Recommended)"). Before building anything for a red main, run `rls-linear main-fix show`. If a
+  session holds main's fix, reach it on its issue and build nothing for main's red unless it hands the fix over. If
+  nobody does, take it first with `rls-linear main-fix claim --issue ROC-<n>` (a `land --needs-main` while main is red
+  takes it for the branch's issue by itself). While another session holds it, `land` refuses a needs-main mark,
+  `--now`, and a branch touching what main's failure names; `--not-main-fix "<why>"` is only for a branch that is not a
+  fix for main. The claim is `refs/train/main-fix` on GitHub, so every Mac, subagent and cloud session obeys it; a hold
+  sent only by message does not count. It clears when main's full check is green on a newer main, and goes stale 3
+  hours after its holder last marked ready, landed or claimed.
+- A branch's own check first, in the design system (ROC-4974; config/train.json `"precheck"`) (Michael, 2026-11-24, ROC-4889: "Write it (Recommended)"). Plain `rls-linear land`
+  rebases the branch on origin/main and refuses it, naming the files, when the rebase conflicts or the branch undoes
+  main's work. It then starts the branch's own Verify on GitHub (every lane, the branch alone) and returns at once. The
+  branch is marked ready only when that check is green; a red result goes on its issue and the branch stays unmarked;
+  a check that could not judge marks it ready as before. `--needs-main` skips it. A branch that passed its own check on
+  the current main is low risk to the train: checked first after a batch failure that names nobody, and its green
+  reused when it lands alone on that tree.
 - Who owns a piece after it is marked ready (Michael, 2026-11-24, ROC-4889 and ROC-4901): marking ready releases the
   claim, and a send-back always sets the issue to Todo with the error and tells the session that marked it, except a
   parent issue held by another live session ("Release and Todo (Recommended)", replacing the agent-made 2026-11-24 rule
