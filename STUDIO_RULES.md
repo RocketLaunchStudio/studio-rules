@@ -374,7 +374,22 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
   proofs, 2026-11-18 to 25): the batch train took a median 78 and a mean 117 minutes from ready to main, mostly queued
   behind the running train, while the same 29 branches replayed one by one take a median 10.5 and a mean 11.8; 78% of
   failures belonged to one branch alone; of 677 re-checks after main moved, 8 failed and none was a real clash; and of
-  13 red runs re-run on the same commit, 5 passed. Other repos keep the batch until their own numbers say otherwise.
+  13 red runs re-run on the same commit, 5 passed. Every other train repo follows, one at a time (next bullet).
+- Retiring the batch machinery (Michael, 2026-11-26, ROC-5124; his answers on the list in
+  `docs/landing-checks/mechanisms-2026-11-26.md`). Once each branch lands alone these go: batching and halving, with
+  the stack's cheap pre-check and the split by check level ("Batching and halving (Recommended)"); the look-ahead hold
+  ("3-minute look-ahead hold (Recommended)"); the 24-hour no-recheck of a red tree and the train's `--again` on ready
+  marks ("24-hour no-recheck and --again"; "Drop it on the train (Recommended)": a re-marked commit is simply checked
+  again, and `land --again` stays for landings outside the train); lane probes on main ("Lane probes on main"); the
+  mark-time check ("Mark-time check (Recommended)"); the laptop clock, once the always-on Mac's clock runs ("Laptop
+  train clock (Recommended)", ROC-4905); and, with or after ROC-5125, the main-red pause and the confirmed-red hold
+  ("Main-red pause"; "Pause goes, guard stays (Recommended)"): nobody is sent back for a failure main's own full check
+  also has, but no ready branch waits for main. The flaky-test quarantine stays. Every train repo moves to `"each":
+  true`, one at a time (the Swift kit, then Crew Console and ATLAS, then claude-plugins), each only after the session
+  checks and posts on ROC-5124 that the repo is set up for it: its landing check, its lane map or quick-landing config,
+  and the statuses main requires ("Every repo, while checking to make sure they're primed to use the correct landing
+  process"). Each removal takes effect when its code lands, starting after the design system's first 10 landings since
+  422d87a02593 are measured (ROC-5071); until then the tools work as the bullets around this one say.
 - One check on the ready branches together; on red, it finds the branch at fault and the rest land ("One check, then
   find culprit (Recommended)", 2026-11-23). It reads the failing lanes and tests from the log (the first failing test,
   never a passing test whose name holds the word "error"), and the branches whose files the failure names are the
@@ -430,7 +445,8 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
   ROC-4869): `rls-linear land --proof "1=...; 2=landing" --waiting-on "3: <what>"` stores the proof on the ready mark,
   which moves the issue to In Review and releases the claim; the train closes, blocks or sets Todo at landing and sends
   a send-back to Todo addressed to the session on the mark; a sent-back commit is marked again only with `--again
-  "<why>"`; `rls-linear train status` and the morning report list send-backs not on main (the linear skill's
+  "<why>"` until that refusal is removed (Michael, 2026-11-26: "Drop it on the train (Recommended)"; bullet above);
+  `rls-linear train status` and the morning report list send-backs not on main (the linear skill's
   `references/finish-and-git.md`). A mark with no proof lands to Todo for the next session to prove.
 - A freeze is turned on by the session leading the risky step, with one command naming the repo, the reason and an
   end time; it shows on the issue and in the morning report and lifts at the end time unless renewed. Michael can
