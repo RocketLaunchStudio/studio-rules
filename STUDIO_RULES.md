@@ -382,6 +382,16 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
   landing until nothing is ready. A timer stays as a sweeper. At most one run and one waiting run per repo; a mark made while one
   waits starts nothing (ROC-4948). It does not run while a freeze is on. Every repo rides it ("Every
   repo (Recommended)"); `--now` lands one branch at once for an urgent fix or a reader.
+- Own check, then land, in the design system (Michael, 2026-11-25, about 22:30 EST, ROC-5071: "Yes, prove then build",
+  to "Switch the design system to own-check-then-land, and run the four proofs first?"; it replaces, for the design
+  system, the batch above and his "Drop now" of a branch's own check). A repo with `"each": true` in config/train.json
+  lands every ready branch alone, as soon as it is marked, in its own `rls-linear train run --branch` process beside any
+  other: no batch, no look-ahead hold, no wait behind a running train. Its check is that branch's own scoped check on
+  the exact commit; the landing turn still serializes pushes to main, and a clean rebase keeps the pass. Why (the
+  proofs, 2026-11-18 to 25): the batch train took a median 78 and a mean 117 minutes from ready to main, mostly queued
+  behind the running train, while the same 29 branches replayed one by one take a median 10.5 and a mean 11.8; 78% of
+  failures belonged to one branch alone; of 677 re-checks after main moved, 8 failed and none was a real clash; and of
+  13 red runs re-run on the same commit, 5 passed. Other repos keep the batch until their own numbers say otherwise.
 - The relay records each run ("The relay - though its health needs to be checked to make sure it works"; "Heartbeat +
   fallback (Recommended)"). No run in 1 hour shows one line on Michael's next prompt and in the morning report, and any
   session may run the train itself meanwhile.
