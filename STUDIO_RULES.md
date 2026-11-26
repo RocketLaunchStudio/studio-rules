@@ -315,8 +315,12 @@ any Mac: `run` lands only on a signal (`--force` is "asked"), on a stack branch 
 `rls-linear land`'s own flow, so the check, the Tier C guard and the push are the same. Tier C never rides it
 (`rls-linear land --now` with Michael's yes). A freeze is `rls-linear train freeze --reason "..." --until 8h`.
 The clock moves to the studio's always-on check Mac, as a plain launchd agent that takes no check slot (Michael,
-2026-11-24, ROC-4889; his words in machine/RULES-HISTORY.md). Until that is built: `rls-linear train tick` every 30 minutes on the laptop (rls-linear
-`config/com.rocketlaunchstudio.train.plist`, installed as a launchd agent). Each run is recorded on
+2026-11-24, ROC-4889; his words in machine/RULES-HISTORY.md). The clock is `rls-linear train tick` every 30 minutes.
+The check Mac's runs as its `agent` account (LaunchDaemon `com.rocketlaunchstudio.train.agent`, installed and checked
+by `machine/train_clock.py`, ROC-4905); the laptop's (rls-linear `config/com.rocketlaunchstudio.train.plist`) stays
+until the check Mac's has run a day (`train_clock.py retire-laptop`). Each repo's `refs/train/clock` (`rls-linear train clock`)
+names the one Mac whose sweeper drives it, so two clocks never sweep one repo; a run on another Mac stands aside while
+`refs/train/running/<mac>` says a run of that repo (or branch) is going there. Each run is recorded on
 the relay (`/health`, `train`; "The relay - though its health needs to be checked to make sure it works"; "Heartbeat +
 fallback (Recommended)"); no run for an hour shows one line on Michael's next prompt and in the 06:45 report, and
 any session may run `rls-linear train run --force` in the repo meanwhile; while the clock is down, marking a branch
