@@ -84,7 +84,7 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
 - One investigator per shared problem. Before debugging a shared machine or tool (a runner, a gate), look for
   a Linear issue already held for it, and if there is one, send your findings to its holder and post them there instead
   of starting your own investigation.
-- When to push, when to land before a piece is finished, what is not a piece, branch pushes and CI, the docs-only and
+- When to push, when to land before a piece is finished, what is not a piece, branch pushes and CI, the minor-change and
   scoped landing checks, and reusing a green status: `rules/landing.md`, "When to check, push and land".
 
 ## Git: several sessions share each repo
@@ -286,10 +286,17 @@ The home of when to push and land; machine/CLAUDE.md, "Checks and waiting", poin
   and its commits not on main in `rls-land/unlanded.jsonl`. `rls-linear unlanded` lists pushed `claude/*` branches
   over a day old whose commits main lacks (by `git cherry`), with the session that last left each; the 06:45 repeat
   report includes the list.
-- Paths no check reads land on the quick check alone. Where a repo has a lane map (the design system's Verify decide
-  step) that map says which paths those are; elsewhere it is the docs-only list (`config/quick-only-paths.json` in
-  rls-linear), except in claude-plugins (its tests read the rules and skills) and in repos whose main requires status
-  checks, where the required checks still run on the exact commit (ROC-3244). Crew Console,
+- Minor changes land on a secret scan alone, with no test run, in every session (Michael, 2026-11-26: "Yes - and make
+  sure this applies to other sessions too - and make sure that it includes other minor changes so we arent running so
+  many needless landings"). A minor change is one whose every file is on the minor-change list
+  (`config/quick-only-paths.json` in rls-linear): Markdown anywhere outside source, content, test, fixture and resource
+  folders, and the pictures, PDFs and plain text under `docs/`. `rls-linear land` rebases it, scans its commits with
+  gitleaks and lands it; a repo's commit hook runs only the secret scan for it too. Where a repo has a lane map (the
+  design system's Verify decide step) that map decides instead; claude-plugins (its tests read the rules and skills)
+  and repos whose main requires status checks keep their checks on the exact commit (ROC-3244).
+- A minor change rides along with the piece it belongs to and lands with it. It lands alone only when a reader needs
+  it on main now: a rule change other sessions must read, a decision record that closes an issue, or a doc another
+  session is about to branch from. A research note, a status line or a page's repo copy waits for the piece. Crew Console,
   Studio Companion and Asset Flow have a landing check scoped to the paths a change touches, with the full suite
   nightly, as Edit Buddy and the kit do (ROC-3245).
 - A later step (push hook, pull request, deploy, the push to main) reuses a green status on that exact commit. A step
