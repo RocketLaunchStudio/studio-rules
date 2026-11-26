@@ -210,9 +210,10 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   off (Tier C, `--no-auto-merge`) it waits for the checks only and says "Checked, not merged". It never says "Done"
   while CI runs. When the landed diff reaches portal edge functions (`supabase/functions/<name>/` or a `_shared` file
   one imports), it says per function either "deploys automatically after main's CI" (the portal's Deploy workflow does
-  it once main's CI is green, after the live-source check) or "waits for Michael's yes" (a Tier C folder, or a changed
-  Tier C file reaching it), and prints the Deploy command for the held ones and for any function with no
-  `live/functions/<name>` tag; landing itself never deploys them (`rules/deploys.md`, Michael 2026-11-15, ROC-3406).
+  it once main's CI is green, after the live-source check; a Tier C one only when every changed file it reaches is
+  Tier C and none is the email hold's code, and not while the cleanup quarantine is on, once the portal's selector
+  carries ROC-4975) or "waits for Michael's yes", and prints the Deploy command for any held one and for any function with
+  no `live/functions/<name>` tag; landing itself never deploys them (`rules/deploys.md`, Michael 2026-11-15, ROC-3406).
   Against a Deploy workflow without the automatic path it says NOT DEPLOYED with each tag's commit instead. A repo whose `main` requires only status checks (the website: `verify`; the design system: `verify` and
   `mac`) fast-forwards main: `land` waits until every required check is green on the exact commit, newest run of each,
   then pushes (ROC-3283). There a clean rebase keeps the earlier pass too (Michael, 2026-11-22, ROC-4585: "Both, clean
@@ -313,7 +314,9 @@ commit ready on GitHub (`refs/ready/<branch>`), then returns; `--now` lands one 
 ready and runs the train now. `rls-linear train status|run|freeze|unfreeze|quarantine|measure` reads and drives it from
 any Mac: `run` lands only on a signal (`--force` is "asked"), on a stack branch in a throwaway copy through
 `rls-linear land`'s own flow, so the check, the Tier C guard and the push are the same. Tier C never rides it
-(`rls-linear land --now` with Michael's yes). A freeze is `rls-linear train freeze --reason "..." --until 8h`.
+(`rls-linear land --now --approved` with Michael's yes). A fast-forward repo (Crew Console, the website) does not read
+an independent review yet, so Tier C code there lands only on his yes until a record a session cannot forge exists
+(ROC-5011; `rules/risk-tiers.md`, "Tier C code changes"). A freeze is `rls-linear train freeze --reason "..." --until 8h`.
 The clock moves to the studio's always-on check Mac, as a plain launchd agent that takes no check slot (Michael,
 2026-11-24, ROC-4889; his words in machine/RULES-HISTORY.md). The clock is `rls-linear train tick` every 30 minutes.
 The check Mac's runs as its `agent` account (LaunchDaemon `com.rocketlaunchstudio.train.agent`, installed and checked
@@ -483,16 +486,22 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
 ## Deploys and Cloudflare
 - Deploy only through the repo's own deploy script or CI workflow, never by calling a deploy tool directly or skipping
   its checks. This covers publishing a Worker or Pages build.
-- Client Portal edge functions that are not Tier C (`rules/risk-tiers.md`, Client App row) deploy automatically
-  after a green CI run on main, through the Deploy workflow, which keeps its live-source check. A function counts as
-  changed when its folder, or a `_shared` file it imports directly or through other shared files, changed since the
-  commit in its `live/functions/<name>` tag. A Tier C function, or one a changed Tier C shared file reaches, deploys
-  only on Michael's yes, through a manual `target=functions` run of the Deploy workflow. The run summary of each
-  automatic run lists what it deployed and what waits for Michael; a red "Edge functions not deployed" job means a
-  live-source mismatch, a failed deploy or changes it could not work out, and a function with no tag is listed but never
-  deployed automatically (portal `scripts/deploy/select-functions.mjs`, ROC-3406). (Michael, 2026-11-15: "Yes, non-Tier C only".)
+- Client Portal edge functions deploy automatically after a green CI run on main, through the Deploy workflow, which
+  keeps its live-source check. A function counts as changed when its folder, or a `_shared` file it imports directly
+  or through other shared files, changed since the commit in its `live/functions/<name>` tag. A Tier C function
+  deploys after its landing only when every changed file it reaches is itself a Tier C path, none is the email hold's
+  code, the cleanup quarantine is lifted (mode `lifted`; `on` and `lifting` hold it), and every pull request that
+  landed one of its changes since its tag carries a passing review record or Michael's yes for the patch it landed,
+  posted after that rule landed on main (a yes given when it meant landing only never deploys); otherwise it waits for
+  Michael's yes and a manual `target=functions` run (Michael, 2026-11-24, ROC-4975: "I land them, you approve acts
+  (Recommended)", narrowed by that change's independent reviews, B1, M1 and review 2's item 3; it supersedes 2026-11-15's "Yes, non-Tier C only", ROC-3406;
+  `rules/risk-tiers.md`, "Tier C code changes"). The run summary of each automatic run lists what it deployed and
+  what waits; a red "Edge functions not deployed" job means a live-source mismatch, a failed deploy or changes it
+  could not work out, and a function with no tag is listed but never deployed automatically (portal
+  `scripts/deploy/select-functions.mjs`). Until that selector carries ROC-4975 on the portal's main, every Tier C
+  function waits for a manual `target=functions` run.
 - The Client Portal Worker goes live a few times a day, not on every merge (Michael, 2026-11-17: "Batch a few times
-  a day (Recommended)", ROC-3800). A green CI run on main deploys changed non-Tier C edge functions as above and
+  a day (Recommended)", ROC-3800). A green CI run on main deploys changed edge functions as above and
   uploads the Worker as a version tagged with its commit, not live; the Deploy workflow's schedule (three off-the-hour
   times a day, which GitHub starts on or after that time) puts the newest upload on main live with `wrangler versions
   deploy`, or skips when it already is (portal `scripts/deploy/pick-worker-version.mjs`). A fix that cannot wait runs
