@@ -100,11 +100,13 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   `Open:` when work remains. Hand off with `rls-linear handoff`; pick up with `rls-linear pickup`.
 - Hand off at boundaries. A session hands off when Michael changes topic, asks for it, or after a compaction at the
   end of a piece (the rls-linear hooks say when). A direct follow-on (the same issue or its next step, in the same
-  repo) continues in the same session, except in a session that has run 24 hours, or been compacted 3 times, since it
-  last loaded its hooks (its start or a resume): it hands off at the end of the piece in hand even when the next piece
-  follows on, and where Michael is typing it recommends the fresh session and carries on if he prefers. A session
-  keeps the hooks and skills it loaded; the rules files reload at each compaction (Michael, 2026-11-24, ROC-5013:
-  "Yes, write it (Recommended)"). After a landing with Michael present, the report says "landed" in one line and
+  repo) continues in the same session, except in a session that has run 24 hours since it last loaded its hooks (its
+  start or a resume): it hands off at the end of the piece in hand even when the next piece follows on, and where
+  Michael is typing it recommends the fresh session and carries on if he prefers (Michael, 2026-11-24, ROC-5013:
+  "Yes, write it (Recommended)"; 2026-11-26, ROC-5110: "Proceed as recommended"). A session keeps the hooks and skill
+  text it loaded, even when it calls the Skill tool again; the rules files reload at each compaction. When a skill it
+  loaded changes on main, a hook names that skill's `SKILL.md` once, and the session reads that file and follows it in
+  place of the text it loaded (Michael, 2026-11-26, ROC-5110: "Yes, use Read"). After a landing with Michael present, the report says "landed" in one line and
   the session does not stop. To hand off, the session writes its handoff (`rls-linear handoff` and the commit
   trailers; work with no issue and no commits uses `rls-linear handoff --new`) and offers the next piece as a session
   card from the brief the handoff prints (fresh, never a fork, the model and effort `rules/models.md` picks); where no
