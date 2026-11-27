@@ -337,6 +337,12 @@ the relay (`/health`, `train`; "The relay - though its health needs to be checke
 fallback (Recommended)"); no run for an hour shows one line on Michael's next prompt and in the 06:45 report, and
 any session may run `rls-linear train run --force` in the repo meanwhile; while the clock is down, marking a branch
 ready starts the train for it at once.
+The train clears its own branches (ROC-5324): after a run it deletes its `train/*` stack and the `land/<stack>/*` CI
+refs, `rls-linear land` deletes the `land/<branch>/<sha>` refs it pushed once main holds them, and `train tick` runs
+`train tidy-refs` every two hours, which deletes `land/*` and `train/*` branches already on main and archives (to
+`refs/archive/<day>/`) then deletes those older than a day. Every delete goes through `branch_delete` with its log and
+restore command. A landing leaves `refs/train/landed/<branch>` for seven days, so `rls-linear train wait --branch <b>`
+(the checks skill, "Watch what you wait on") can tell landed from sent back for a reader who needs it on main.
 
 #### What a landing checks
 Michael, 2026-11-25, ROC-5071: "Almost nothing needs the full check - the only thing that really needs the full check
