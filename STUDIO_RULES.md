@@ -351,7 +351,9 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
 - Working (branch commits, Debug builds, previews, builds for Michael's own devices): the build only.
 - Marking ready: `rls-linear land` rebases the branch on origin/main in a throwaway copy, refuses it, naming the files,
   when it conflicts or undoes main's work, and runs the repo's mark-time check once on a clean copy of the rebased
-  commit on the session's own Mac (config/train.json `markCheck`; the design system: `scripts/quick.sh`). A failure
+  commit on the session's own Mac (config/train.json `markCheck`: the design system's `scripts/quick.sh`;
+  claude-plugins' stale-copy, skill-budget and `plugin validate --strict` steps; the Swift kit's shellcheck and
+  validate steps; ROC-5341). A failure
   leaves the branch unmarked and costs no GitHub run. No check runs on GitHub for a branch alone before it is marked
   ready (Michael, 2026-11-25: "Drop now - but note to check and see if it actually is improved after we try a few").
   After the first 10 landings on this flow, `rls-linear train measure <repo>` compares ready-to-main time, runner
@@ -466,6 +468,17 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
   "<why>"` until that refusal is removed (Michael, 2026-11-26: "Drop it on the train (Recommended)"; bullet above);
   `rls-linear train status` and the morning report list send-backs not on main (the linear skill's
   `references/finish-and-git.md`). A mark with no proof lands to Todo for the next session to prove.
+- How a send-back reaches a session (ROC-5341; Michael, 2026-11-27: "Yes - with limits"). The train first retries a
+  branch that conflicts only with an earlier branch of its own stack and applies to main alone, on the new main, once.
+  A send-back is left for the session on the ready mark, which hears it at its next prompt or turn end. The train wakes
+  that session (`claude --bg --resume`) only when it ran on this laptop, ended within 24 hours and is not still open,
+  at most once per send-back and 6 times a day, and only when the load guard would let a session start; otherwise the
+  send-back is one line on Michael's next prompt. Each send-back gets a class from its first error; a class seen on a
+  second branch gets one fix issue (marked `Send-back class:`), later hits comment on it and pass its `Try next:`
+  line to the session, a hit after its fix reopens it, and a fix that held 7 days is said once.
+  `rls-linear train classes [repo] --apply` classes the send-backs already logged. Every send-back and wake decision
+  is a row in train.jsonl (`kind: "branch"` with `signature` and `fixIssue`; `kind: "wake"`), read by the failure
+  board.
 - A freeze is turned on by the session leading the risky step, with one command naming the repo, the reason and an
   end time; it shows on the issue and in the morning report and lifts at the end time unless renewed. Michael can
   also say "freeze <repo>" in chat ("The leading session (Recommended)").
