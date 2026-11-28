@@ -360,7 +360,7 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
 - Marking ready: `rls-linear land` rebases the branch on origin/main in a throwaway copy, refuses it, naming the files,
   when it conflicts or undoes main's work, and runs the repo's mark-time check once on a clean copy of the rebased
   commit on the session's own Mac (config/train.json `markCheck`: the design system's `scripts/quick.sh`;
-  claude-plugins' stale-copy, skill-budget and `plugin validate --strict` steps; the Swift kit's shellcheck and
+  claude-plugins' stale-copy, skill-budget, hook-wrapper, public-rules-text and `plugin validate --strict` steps; the Swift kit's shellcheck and
   validate steps; ROC-5341). A failure
   leaves the branch unmarked and costs no GitHub run. No check runs on GitHub for a branch alone before it is marked
   ready (Michael, 2026-11-25: "Drop now - but note to check and see if it actually is improved after we try a few").
@@ -479,10 +479,13 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
   `references/finish-and-git.md`). A mark with no proof lands to Todo for the next session to prove.
 - How a send-back reaches a session (ROC-5341; Michael, 2026-11-27: "Yes - with limits"). The train first retries a
   branch that conflicts only with an earlier branch of its own stack and applies to main alone, on the new main, once.
-  A send-back is left for the session on the ready mark, which hears it at its next prompt or turn end. The train wakes
-  that session (`claude --bg --resume`) only when it ran on this laptop, ended within 24 hours and is not still open,
-  at most once per send-back and 6 times a day, and only when the load guard would let a session start; otherwise the
-  send-back is one line on Michael's next prompt. Each send-back gets a class from its first error; a class seen on a
+  A send-back is left for the session on the ready mark, which hears it at its next prompt or turn end. Within the
+  same limits (at most once per send-back and 6 times a day, only a session on this laptop within 24 hours of its last
+  turn) the train wakes that session: an open, idle one in place, through the asyncRewake Stop hook every session that
+  marked a branch starts (`send_back_watch.py`); an ended one with `claude --bg --resume`, after putting back the
+  worktree its archive removed, when the load guard would let a session start. An open session is never resumed as a
+  second copy. Send-backs decided on the CI Mac reach the laptop's sessions from their GitHub record on the laptop's next
+  run. Otherwise the send-back is one line on Michael's next prompt. Each send-back gets a class from its first error; a class seen on a
   second branch gets one fix issue (marked `Send-back class:`), later hits comment on it and pass its `Try next:`
   line to the session, a hit after its fix reopens it, and a fix that held 7 days is said once.
   `rls-linear train classes [repo] --apply` classes the send-backs already logged. Every send-back and wake decision
