@@ -451,8 +451,8 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
   working towards is really in our best interest"). Branches that need different checks are split by check level, so a light branch never waits on a
   heavy neighbour's slow check (Michael, 2026-11-24, ROC-4889: "Split by check level (Recommended)", "with a smarter
   approach, research ways we can make the appraoch quicker and based on more relevant insight"). The branch at fault
-  goes back to its issue, set to Todo with the error, for the next free session or the dispatcher ("Back to its issue
-  (Recommended)").
+  goes back to its issue through the returns desk (bullet "How a send-back reaches a session" below; "Back to its
+  issue (Recommended)").
 - Flaky tests (Michael, 2026-11-25, ROC-5071: "Yeah quarantine - and assess if what we are resting is flawed and if
   that test can be disregarded - bypassing that flaky error. Also - we must implement a method that self corrects for
   things like this - that many sessions shouldnt be sent back for a flaky error like that, they should adapt so we dont
@@ -488,8 +488,8 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
   sent only by message does not count. It clears when main's full check is green on a newer main, and goes stale 3
   hours after its holder last marked ready, landed or claimed.
 - Who owns a piece after it is marked ready (Michael, 2026-11-24, ROC-4889 and ROC-4901): marking ready releases the
-  claim, and a send-back always sets the issue to Todo with the error and tells the session that marked it, except a
-  parent issue held by another live session ("Release and Todo (Recommended)", replacing the agent-made 2026-11-24 rule
+  claim, and a send-back belongs to the issue, never to the session that marked it (Michael, 2026-11-28: "Returns can
+  go to the Issue"), except a parent issue held by another live session ("Release and Todo (Recommended)", replacing the agent-made 2026-11-24 rule
   that a claim under a day old keeps the state). The session proves each Done-when line when it marks ready, or names
   what waits on a date or a measurement, and the train closes the issue at landing when that proof covers every line
   and its own check passed, never for Risk C ("Train closes on proof (Recommended)"). At landing the train also sets
@@ -497,28 +497,38 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
   waits on Michael alone ("Train sets it - nothing should wait on me exclusively. Allow agents to fully control that
   process, I never really open the items myself in linear."). Built 2026-11-25 (ROC-4901, ROC-4867,
   ROC-4869): `rls-linear land --proof "1=...; 2=landing" --waiting-on "3: <what>"` stores the proof on the ready mark,
-  which moves the issue to In Review and releases the claim; the train closes, blocks or sets Todo at landing and sends
-  a send-back to Todo addressed to the session on the mark; a sent-back commit is marked again only with `--again
+  which moves the issue to In Review and releases the claim; the train closes, blocks or sets Todo at landing and
+  routes a send-back through the returns desk; a sent-back commit is marked again only with `--again
   "<why>"` until that refusal is removed (Michael, 2026-11-26: "Drop it on the train (Recommended)"; bullet above);
   `rls-linear train status` and the morning report list send-backs not on main (the linear skill's
   `references/finish-and-git.md`). A mark with no proof lands to Todo for the next session to prove.
-- How a send-back reaches a session (ROC-5341; Michael, 2026-11-27: "Yes - with limits"). The train first retries a
-  branch that conflicts only with an earlier branch of its own stack and applies to main alone, on the new main, once.
-  A conflict in `land`'s own rebase onto main (main moved after the stack was built) is tried once more on fresh main
-  too, then is the branch's to fix: the run that found it sends it back at once, naming the conflicting files, and
-  never leaves it ready as an environment stop (ROC-5355).
-  A send-back is left for the session on the ready mark, which hears it at its next prompt or turn end. Within the
-  same limits (at most once per send-back and 6 times a day, only a session on this laptop within 24 hours of its last
-  turn) the train wakes that session: an open, idle one in place, through the asyncRewake Stop hook every session that
-  marked a branch starts (`send_back_watch.py`); an ended one with `claude --bg --resume`, after putting back the
-  worktree its archive removed, when the load guard would let a session start. An open session is never resumed as a
-  second copy. Send-backs decided on the CI Mac reach the laptop's sessions from their GitHub record on the laptop's next
-  run. Otherwise the send-back is one line on Michael's next prompt. Each send-back gets a class from its first error; a class seen on a
-  second branch gets one fix issue (marked `Send-back class:`), later hits comment on it and pass its `Try next:`
-  line to the session, a hit after its fix reopens it, and a fix that held 7 days is said once.
-  `rls-linear train classes [repo] --apply` classes the send-backs already logged. Every send-back and wake decision
-  is a row in train.jsonl (`kind: "branch"` with `signature` and `fixIssue`; `kind: "wake"`), read by the failure
-  board.
+- How a send-back reaches a session: the returns desk (Michael, 2026-11-28: "Returns can go to the Issue";
+  `scripts/returns_desk.py`). The old way addressed the session on the ready mark and waited for it, and that session
+  had usually ended: 19 returns sat over 4 hours with nobody on them. Nothing waits on that session now. The train
+  first retries a branch that conflicts only with an earlier branch of its own stack and applies to main alone, on the
+  new main, once. A conflict in `land`'s own rebase onto main (main moved after the stack was built) is tried once more
+  on fresh main too (ROC-5355). Then every send-back goes to the returns desk:
+  1. A mechanical failure is fixed by the train and retried once, with nothing written on the issue: a branch behind
+     main that rebases cleanly onto fresh main, a conflict only in a repo's generated files (main's copy taken and the
+     generator re-run), or a stale generated copy (the generator re-run on the branch). The generated files and their
+     generator are `REGEN` in the script (claude-plugins: `plugins/rls-account/`, `scripts/package_account_skills.py
+     --plugin`). The fix is pushed with a lease on the sent-back commit and marked ready again with `returnsRetry` on
+     the mark, so a second failure goes to step 2.
+  2. Anything else goes on the issue: its class, the failing check, the commit and the log tail; the issue is set to
+     Todo and delegated to Claude, which starts a fresh session through the dispatcher (the delegate path). An issue
+     another live session holds stays with it, with the failure posted for it; Michael's own, Risk D, a Needs or Hold
+     label or a paused project is left Todo with the failure, undelegated; a closed issue is left closed.
+  3. A branch with no issue gets one filed (Agent, Todo) and then goes to step 2.
+  4. A shared cause is one main problem, not N returns: when the failure's class already has a fix issue (the same
+     first error on another branch), the branch's issue gets the failure and waits on that fix issue, and only the
+     fix issue is delegated.
+  5. A superseded return is closed: when a branch lands, the send-back record of every other branch for the same
+     issue is cleared, and a return whose issue is already Done is cleared at once.
+  Each send-back also gets a class from its first error; a class seen on a second branch gets one fix issue (marked
+  `Send-back class:`), later hits comment on it and add its `Try next:` line to the return, a hit after its fix
+  reopens it, and a fix that held 7 days is said once. `rls-linear train classes [repo] --apply` classes the
+  send-backs already logged. Every send-back is a row in train.jsonl (`kind: "branch"` with `signature`, `fixIssue`
+  and `returnRoute`: retried, delegated, shared, held, todo or closed), read by the failure board.
 - A freeze is turned on by the session leading the risky step, with one command naming the repo, the reason and an
   end time; it shows on the issue and in the morning report and lifts at the end time unless renewed. Michael can
   also say "freeze <repo>" in chat ("The leading session (Recommended)").
