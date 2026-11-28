@@ -345,6 +345,9 @@ the relay (`/health`, `train`; "The relay - though its health needs to be checke
 fallback (Recommended)"); no run for an hour shows one line on Michael's next prompt and in the 06:45 report, and
 any session may run `rls-linear train run --force` in the repo meanwhile; while the clock is down, marking a branch
 ready starts the train for it at once.
+Each train and land run names the rls-linear code it runs (version and commit) on its first line and on its rows
+(ROC-5351). A train run that finds the plugin on disk moved on since it started (a sync) finishes the round in hand,
+sends nobody back on the old code, and hands the rest to a fresh run on the new code.
 The train clears its own branches (ROC-5324): after a run it deletes its `train/*` stack and the `land/<stack>/*` CI
 refs, `rls-linear land` deletes the `land/<branch>/<sha>` refs it pushed once main holds them, and `train tick` runs
 `train tidy-refs` every two hours, which deletes `land/*` and `train/*` branches already on main and archives (to
