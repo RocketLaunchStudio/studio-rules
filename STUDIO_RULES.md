@@ -447,6 +447,12 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
   again renews the 7 days; never a whole lane or a whole test file); the design system's Verify reads it (main's copy
   of `scripts/verify_quarantine.mjs`). A failure that names no test (only a lane or the environment) on two unrelated
   branches still pauses the repo's train until main moves.
+- A pause asks main itself (ROC-5356). The moment a train pauses on a main that looks red, it runs main's own check on
+  that commit in its own process (`rls-linear train probe`), and again every 2 hours while the pause stands; the pause
+  (`refs/train/paused`) names its last probe, and a green result lifts it and starts the train. The check is the
+  repo's `mainCheck` in config/train.json (Crew Console: the Mac queue's gate on main's head; the Swift kit: kit-ci
+  suite=full on main), recorded on main's commit as the `main-check` status; the design system's is its full check and
+  `full-check` status. A repo with neither (claude-plugins, ATLAS) pauses as before, until main moves.
 - When main itself is red (ROC-4944, ROC-4953) (Michael, 2026-11-24, ROC-4889: "Write it (Recommended)"). A repo whose full check posts a commit status on main (config/train.json
   `fullCheckStatus`; the design system's `full-check`) is judged by that status. A red seen once is run again first and
   landings go on meanwhile; a red on two commits since the last green, or twice on one commit, is confirmed. While it
