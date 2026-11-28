@@ -488,6 +488,9 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
   `references/finish-and-git.md`). A mark with no proof lands to Todo for the next session to prove.
 - How a send-back reaches a session (ROC-5341; Michael, 2026-11-27: "Yes - with limits"). The train first retries a
   branch that conflicts only with an earlier branch of its own stack and applies to main alone, on the new main, once.
+  A conflict in `land`'s own rebase onto main (main moved after the stack was built) is tried once more on fresh main
+  too, then is the branch's to fix: the run that found it sends it back at once, naming the conflicting files, and
+  never leaves it ready as an environment stop (ROC-5355).
   A send-back is left for the session on the ready mark, which hears it at its next prompt or turn end. Within the
   same limits (at most once per send-back and 6 times a day, only a session on this laptop within 24 hours of its last
   turn) the train wakes that session: an open, idle one in place, through the asyncRewake Stop hook every session that
