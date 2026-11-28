@@ -257,7 +257,8 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   prints the reason with the landing.
 - Clear finished worktrees only with `rls-linear worktrees --apply`, or `rls-linear done` for the session's own; both
   check that nothing is lost and nobody uses it. Branches are never deleted, nothing is forced, and each removal is
-  archived first (`rls-linear worktrees restore <name>`). `--idle-days <n>` (never under half a day) shortens the 7-day
+  archived first (`rls-linear worktrees restore <name>`). A worktree whose commits are all on main waits 2 idle days, any
+  other 7 (Michael, 2026-11-28: "Yes, 2 days"). `--idle-days <n>` (never under half a day) shortens the 7-day
   idle wait only for a consolidation Michael asked for (2026-11-20, Crew Console cleanup v2: "Can we go ahead and work
   on consolidating the worktrees and branches to main and cleaning from there?"). For a worktree the Claude app leased or pooled, use only
   `git worktree prune`, once its folder is gone, never `git worktree remove`.
