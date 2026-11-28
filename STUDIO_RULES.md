@@ -173,6 +173,21 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   folders) until a rename lands; name them in backticks as identifiers, never as the feature's name.
 
 ## Landing and worktrees
+### The 2026-11-28 reset (wins over anything below that disagrees)
+Michael, 2026-11-28 (his words in machine/RULES-HISTORY.md; plan in claude-plugins
+`docs/audits/2026-11-28-pipeline-5x/README.md`):
+- Any pipeline mechanism that does not support the work may be frozen, retired or rebuilt; build only what is needed.
+  No new mechanism lands unless it replaces or deletes an older one.
+- Every train repo lands each ready branch alone (`"each": true`), all at once, with no batching, halving, look-ahead
+  hold or main-red pause; the retirements listed under "Retiring the batch machinery" below go now, without waiting
+  for a measurement.
+- A send-back belongs to its issue, not to the session that marked the branch ready: the train fixes mechanical
+  failures itself and otherwise hands the issue to a fresh session.
+- Design system changes land at least twice as fast as on 2026-11-28 (ready to main median 23.9 min).
+- Previews and internal builds update at once on every push; a client-facing production deploy goes out when no
+  client is active on it, at the most opportune time (`rules/deploys.md`).
+- Worktrees whose work is on main are cleared now, without the 2-day wait.
+
 - Before pushing, confirm three things: the branch is up to date with `origin/main`, the project's check passes on that
   exact state (its landing check: "What a landing checks" below), and
   `git log origin/main..HEAD` holds only your commits. Then land and push without asking.
