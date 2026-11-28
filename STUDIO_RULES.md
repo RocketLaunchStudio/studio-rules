@@ -342,11 +342,11 @@ suite=full` (Michael, 2026-11-27: "Nightly release"). The per-project table is
 in the draft linked from ROC-4676.
 Quick landing: `rls-linear land` runs the quick check for a repo switched on in rls-linear's
 `config/quick-landing.json` (check files: `config/gate-files.json`), and its dry run and report name the check and why.
-Where the train is on, plain `rls-linear land` runs the repo's mark-time check (below), pushes the branch and marks that
-commit ready on GitHub (`refs/ready/<branch>`), then returns; `--now` lands one branch at once, `--needs-main` marks it
-ready and runs the train now. `rls-linear train status|run|freeze|unfreeze|quarantine|measure` reads and drives it from
-any Mac: `run` lands only on a signal (`--force` is "asked"), on a stack branch in a throwaway copy through
-`rls-linear land`'s own flow, so the check, the Tier C guard and the push are the same. Tier C never rides it
+Where the train is on, plain `rls-linear land` runs the repo's mark-time check (below), pushes the branch, marks that
+commit ready on GitHub (`refs/ready/<branch>`) and starts that branch's own landing run, then returns; `--now` lands one
+branch at once, `--needs-main` marks it ready and lands it in this session.
+`rls-linear train status|run|freeze|unfreeze|quarantine|measure` reads and drives it from any Mac: `run` lands each ready branch alone (`--branch` one only; `--force` is "asked"), on a stack branch in a throwaway
+copy through `rls-linear land`'s own flow, so the check, the Tier C guard and the push are the same. Tier C never rides it
 (`rls-linear land --now --approved` with Michael's yes). A fast-forward repo (Crew Console, the website) does not read
 an independent review yet, so Tier C code there lands only on his yes until a record a session cannot forge exists
 (ROC-5011; `rules/risk-tiers.md`, "Tier C code changes"). A freeze is `rls-linear train freeze --reason "..." --until 8h`.
@@ -385,15 +385,15 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
   ready (Michael, 2026-11-25: "Drop now - but note to check and see if it actually is improved after we try a few").
   After the first 10 landings on this flow, `rls-linear train measure <repo>` compares ready-to-main time, runner
   minutes and send-backs with `docs/landing-checks/measurements-2026-11-25.md`, and the result goes on ROC-5071.
-- Landing: one check per batch, scoped by the paths the batch changes. Where a repo has a lane map (the design system's
-  Verify decide step, always read from origin/main), the batch runs the static lane plus each lane its paths reach,
-  every lane for a path the map does not know, and every lane for a change to how the checks run. Elsewhere the train's
-  check is the repo's quick check, except a change to the checks themselves, which takes the full check. The train runs
-  no laptop copy of a check the batch's own run repeats: in the design system no quick check on the stack and no
-  landing quick.sh, since the static lane runs the same checks on the exact commit main requires. Client Portal and the
-  website, whose landings go live ("Full check on landing (Recommended)"), and claude-plugins and linear-relay, which
-  reach every session ("Whole check on landing (Recommended)"), take their whole check on every landing: there the
-  landing is the ending.
+- Landing: one check per branch, scoped by the paths the branch changes. Where a repo has a lane map (the design
+  system's Verify decide step, always read from origin/main), the branch runs the static lane plus each lane its paths
+  reach, every lane for a path the map does not know, and every lane for a change to how the checks run. Elsewhere
+  the train's check is the repo's quick check, except a change to the checks themselves, which takes the full check.
+  The train runs no laptop copy of a check the branch's own run repeats: in the design system no landing quick.sh,
+  since the static lane runs the same checks on the exact commit main requires. Client Portal and the website, whose
+  landings go live ("Full check on landing (Recommended)"), and claude-plugins and linear-relay, which reach every
+  session ("Whole check on landing (Recommended)"), take their whole check on every landing: there the landing is the
+  ending.
 - The ending: the full check runs only there (Michael, 2026-11-25, ROC-5071: "Only at the ending (Recommended)"),
   never after a landing. Nightly, on each quick-landing repo's main, started by the relay, not GitHub's schedule
   (`rls-linear main-watch <repo>`, which skips a main that has not moved since its last green); before a web kit
@@ -403,82 +403,44 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
   the checks run, before it lands; and on request at a project's close (`rls-linear main-watch <repo>` by hand). A red
   one files one issue, or counts on the open one, naming the landings since the last green; it pauses nothing, is
   fixed next, and blocks the next release until green ("File and fix, no pause (Recommended)").
-- When a repo's train runs (Michael, 2026-11-24, ROC-4889: "Instead of it being a train that arbitratily waits - it
-  should go on ready, with perhaps a process that checks other claude sessions - without interrupting them too much in
-  a way that would derail them - to assess if theres anything in the next few minutes it can batch - if not, then it
-  goes as ready"; replacing 2026-11-23 "Within 30 minutes (Recommended)"): marking a branch ready starts its repo's
-  train. It first looks, without messaging any session, for another branch in that repo about to be ready in the next
-  few minutes, and waits for it only then, at most 3 minutes (config/train.json `holdMinutes`; "Up to 3 minutes
-  (Recommended)"; kept at 3 on 2026-11-25, ROC-5071, since time to main wins: "Time to main (Recommended)"); it keeps
-  landing until nothing is ready. A timer stays as a sweeper. At most one run and one waiting run per repo; a mark made while one
-  waits starts nothing (ROC-4948). It does not run while a freeze is on. Every repo rides it ("Every
-  repo (Recommended)"); `--now` lands one branch at once for an urgent fix or a reader.
-- Own check, then land, in the design system (Michael, 2026-11-25, about 22:30 EST, ROC-5071: "Yes, prove then build",
-  to "Switch the design system to own-check-then-land, and run the four proofs first?"; it replaces, for the design
-  system, the batch above and his "Drop now" of a branch's own check). A repo with `"each": true` in config/train.json
-  lands every ready branch alone, as soon as it is marked, in its own `rls-linear train run --branch` process beside any
-  other: no batch, no look-ahead hold, no wait behind a running train. Its check is that branch's own scoped check on
-  the exact commit; the landing turn still serializes pushes to main, and a clean rebase keeps the pass. Why (the
-  proofs, 2026-11-18 to 25): the batch train took a median 78 and a mean 117 minutes from ready to main, mostly queued
-  behind the running train, while the same 29 branches replayed one by one take a median 10.5 and a mean 11.8; 78% of
-  failures belonged to one branch alone; of 677 re-checks after main moved, 8 failed and none was a real clash; and of
-  13 red runs re-run on the same commit, 5 passed. Every other train repo follows, one at a time (next bullet).
-- Retiring the batch machinery (Michael, 2026-11-26, ROC-5124; his answers on the list in
-  `docs/landing-checks/mechanisms-2026-11-26.md`). Once each branch lands alone these go: batching and halving, with
-  the stack's cheap pre-check and the split by check level ("Batching and halving (Recommended)"); the look-ahead hold
-  ("3-minute look-ahead hold (Recommended)"); the 24-hour no-recheck of a red tree and the train's `--again` on ready
-  marks ("24-hour no-recheck and --again"; "Drop it on the train (Recommended)": a re-marked commit is simply checked
-  again, and `land --again` stays for landings outside the train); lane probes on main ("Lane probes on main"); the
-  mark-time check ("Mark-time check (Recommended)"); the laptop clock, once the always-on Mac's clock runs ("Laptop
-  train clock (Recommended)", ROC-4905); and, with or after ROC-5125, the main-red pause and the confirmed-red hold
-  ("Main-red pause"; "Pause goes, guard stays (Recommended)"): nobody is sent back for a failure main's own full check
-  also has, but no ready branch waits for main. The flaky-test quarantine stays. Every train repo moves to `"each":
-  true`, one at a time (the Swift kit, then Crew Console and ATLAS, then claude-plugins), each only after the session
-  checks and posts on ROC-5124 that the repo is set up for it: its landing check, its lane map or quick-landing config,
-  and the statuses main requires ("Every repo, while checking to make sure they're primed to use the correct landing
-  process"). Each removal takes effect when its code lands, starting after the design system's first 10 landings since
-  422d87a02593 are measured (ROC-5071); until then the tools work as the bullets around this one say.
-- One check on the ready branches together; on red, it finds the branch at fault and the rest land ("One check, then
-  find culprit (Recommended)", 2026-11-23). It reads the failing lanes and tests from the log (the first failing test,
-  never a passing test whose name holds the word "error"), and the branches whose files the failure names are the
-  suspects; the names of a check's own runner scripts are no evidence (config/train.json `runnerFiles`). With
-  suspects it checks the others first; with none it gives the batch one named re-run (Flaky tests, below) and, where
-  the repo takes a lane probe (config/train.json `laneProbe`), runs the failed lanes on main alone beside it: when main
-  fails the same tests the failure is main's, nobody is halved or sent back, main's full check starts and the train
-  pauses until main moves. Otherwise it halves, never re-checking a tree already known to fail nor re-running a failure
-  already confirmed in the round. Re-running failed lanes on each suspect alone, side by side, waits for the
-  10-landing measurement (Michael, 2026-11-25, ROC-5071: "minimum - then measure - and consider if the method we are
-  working towards is really in our best interest"). Branches that need different checks are split by check level, so a light branch never waits on a
-  heavy neighbour's slow check (Michael, 2026-11-24, ROC-4889: "Split by check level (Recommended)", "with a smarter
-  approach, research ways we can make the appraoch quicker and based on more relevant insight"). The branch at fault
-  goes back to its issue through the returns desk (bullet "How a send-back reaches a session" below; "Back to its
-  issue (Recommended)").
+- When a repo's train runs (Michael, 2026-11-24, ROC-4889: "it should go on ready"; 2026-11-25, ROC-5071: "Yes, prove
+  then build"; 2026-11-28, the reset above): every train repo lands each ready branch alone (`"each": true` on every
+  repo in config/train.json). Marking a branch ready starts its own `rls-linear train run --branch` process at once,
+  beside any other: no batch, no wait behind another branch. Its check is that branch's own scoped check on the
+  exact commit; the landing turn still serializes pushes to main, and a clean rebase keeps the pass. The 30-minute
+  sweeper starts one run per ready branch not already landing. Nothing runs while a freeze is on; `--now` lands one
+  branch at once outside the train. Why (the proofs, 2026-11-18 to 25): the batch train took a median 78 and a mean
+  117 minutes from ready to main, mostly queued behind the running train, while the same 29 branches replayed one by
+  one take a median 10.5 and a mean 11.8; 78% of failures belonged to one branch alone.
+- Retired (Michael, 2026-11-26, ROC-5124, his answers in `docs/landing-checks/mechanisms-2026-11-26.md`; gone at once
+  by the 2026-11-28 reset): batching and halving, with the stack's cheap pre-check, the split by check level and
+  culprit-finding; the look-ahead hold (`holdMinutes`, `rls-linear train soon`); the 24-hour no-recheck of a red tree
+  (a re-marked commit is simply checked again; `land --again` stays for landings outside the train); lane probes on
+  main (`laneProbe`); the main-red pause, its probe (`rls-linear train probe`, `mainCheck`) and the confirmed-red
+  hold. What stays: the mark-time check, the flaky-test quarantine, the guard below that sends nobody back for main's
+  own failure, and one fixer for a red main. The laptop clock goes once the always-on Mac's clock has run a day
+  (`machine/train_clock.py retire-laptop`, ROC-4905).
+- A red check on a branch: the branch goes back to its issue through the returns desk (bullet "How a send-back
+  reaches a session" below; "Back to its issue (Recommended)"). It reads the failing lanes and tests from the log (the first
+  failing test, never a passing test whose name holds the word "error"); the names of a check's own runner scripts
+  are no evidence that the failure is the branch's (config/train.json `runnerFiles`).
 - Flaky tests (Michael, 2026-11-25, ROC-5071: "Yeah quarantine - and assess if what we are resting is flawed and if
   that test can be disregarded - bypassing that flaky error. Also - we must implement a method that self corrects for
   things like this - that many sessions shouldnt be sent back for a flaky error like that, they should adapt so we dont
-  get ourselves stuck wasting minutes and time"). A red check whose failure names no branch in the batch and is not
-  main's own gets one named re-run of its failed jobs on the same commit ("one named re-run: <tests>"). If that passes,
-  the batch lands and the test is a flake: the train quarantines it with an issue and a 7-day expiry, and notes it on
-  the failure ledger; the issue asks whether the test is flawed and can be dropped or rewritten. A quarantined test
-  still runs on every landing and reports, but cannot send work back; the nightly full check and every release run it
-  strictly. A test the round's re-run confirmed is not re-run again in the round. The list is `refs/train/quarantine`
-  on the repo, written only by the train or by hand (`rls-linear train quarantine` lists, adds and removes; adding
-  again renews the 7 days; never a whole lane or a whole test file); the design system's Verify reads it (main's copy
-  of `scripts/verify_quarantine.mjs`). A failure that names no test (only a lane or the environment) on two unrelated
-  branches still pauses the repo's train until main moves.
-- A pause asks main itself (ROC-5356). The moment a train pauses on a main that looks red, it runs main's own check on
-  that commit in its own process (`rls-linear train probe`), and again every 2 hours while the pause stands; the pause
-  (`refs/train/paused`) names its last probe, and a green result lifts it and starts the train. The check is the
-  repo's `mainCheck` in config/train.json (Crew Console: the Mac queue's gate on main's head; the Swift kit: kit-ci
-  suite=full on main), recorded on main's commit as the `main-check` status; the design system's is its full check and
-  `full-check` status. A repo with neither (claude-plugins, ATLAS) pauses as before, until main moves.
-- When main itself is red (ROC-4944, ROC-4953) (Michael, 2026-11-24, ROC-4889: "Write it (Recommended)"). A repo whose full check posts a commit status on main (config/train.json
-  `fullCheckStatus`; the design system's `full-check`) is judged by that status. A red seen once is run again first and
-  landings go on meanwhile; a red on two commits since the last green, or twice on one commit, is confirmed. While it
-  is confirmed, nobody is sent back for a failure main also has, and only needs-main branches and branches touching
-  what it fails on land, each alone and ahead of any halving; every other ready branch waits and stays ready. The
-  landing of main's fix (the main-fix holder's branch, or a needs-main mark) starts main's full check again; no other
-  landing does, and none starts one while a session holds main's fix (ROC-5071).
+  get ourselves stuck wasting minutes and time"). A red check whose failure names none of the branch's own files and
+  is not main's own gets one named re-run of its failed jobs on the same commit ("one named re-run: <tests>"). If that
+  passes, the branch lands and the test is a flake: the train quarantines it with an issue and a 7-day expiry, and
+  notes it on the failure ledger; the issue asks whether the test is flawed and can be dropped or rewritten. A
+  quarantined test still runs on every landing and reports, but cannot send work back; the nightly full check and
+  every release run it strictly. The list is `refs/train/quarantine` on the repo, written only by the train or by hand
+  (`rls-linear train quarantine` lists, adds and removes; adding again renews the 7 days; never a whole lane or a
+  whole test file); the design system's Verify reads it (main's copy of `scripts/verify_quarantine.mjs`).
+- When main itself is red (ROC-4944) (Michael, 2026-11-26, ROC-5124: "Pause goes, guard stays (Recommended)"). A repo
+  whose full check posts a commit status on main (config/train.json `fullCheckStatus`; the design system's
+  `full-check`) is judged by that status. While it is red, nobody is sent back for a failure whose failing tests all
+  fail on main too: that branch stays ready, and every other ready branch goes on landing. The landing of main's fix
+  (the main-fix holder's branch, or a needs-main mark) starts main's full check again; no other landing does, and
+  none starts one while a session holds main's fix (ROC-5071).
 - One fixer for a red main (ROC-4951) (Michael, 2026-11-24, ROC-4889: "Write it (Recommended)"). Before building anything for a red main, run `rls-linear main-fix show`. If a
   session holds main's fix, reach it on its issue and build nothing for main's red unless it hands the fix over. If
   nobody does, take it first with `rls-linear main-fix claim --issue ROC-<n>` (a `land --needs-main` while main is red
