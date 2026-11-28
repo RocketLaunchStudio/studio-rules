@@ -576,8 +576,12 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
   client session has been seen for 15 minutes (the portal's own activity heartbeat, counts only; staff, demo and test
   sessions do not count), or, after 12 hours of waiting, in the quietest hour of the last 28 days, and skips when it
   already is live (portal `scripts/deploy/pick-worker-version.mjs` and `scripts/deploy/deploy-when-idle.mjs`;
-  `target=check` is its dry run). A fix that cannot wait runs the Deploy workflow by hand: `target=promote` (the
-  newest upload, in seconds, no idle check) or `target=worker` (build and deploy now). Check production after the
+  `target=check` is its dry run). Overnight, 06:00 to 10:00 UTC (1 to 5 a.m. US Eastern in winter), the newest upload
+  goes live whether or not a client is on (Michael, 2026-11-28: "make it also auto deploy over night regardless").
+  `AUTO_DEPLOY` is on (Michael, 2026-11-28: "Turn on AUTO_DEPLOY for the portal"; it replaces the cleanup plan's "stays
+  off until R2"). Michael, or a fix that cannot wait, forces a deploy by hand (Michael, 2026-11-28: "allow for me to
+  force a deploy"): Actions, Deploy, Run workflow with `target=worker` (build and deploy main now) or `target=promote`
+  (the newest upload, in seconds, no idle check); `npm run deploy:now` in the portal starts the first. Check production after the
   promotion that carries your change, not after the merge. A portal migration that removes or renames something waits
   until the Worker code that stops using it is live (portal `docs/runbooks/github-deploy.md`, "Batched Worker
   deploys").
