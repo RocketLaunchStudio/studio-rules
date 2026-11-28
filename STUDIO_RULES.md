@@ -317,9 +317,12 @@ commits and trailers kept), lands that once, and on red sends the branch at faul
 (Michael, 2026-11-23: "Ban we batch and of these landings together? we have updated rules we adapted you mauy not be
 following"). The Client Portal lands its pull requests one at a time, in order, each with its own
 whole check, since its "CI passed" and the email and charge guards judge each pull request ("One at a time
-(Recommended)"). The Swift kit lands on its quick script checks, its full Mac check nightly and before each kit
-release, and its guard and rls-gate edits take the quick check too (Michael, 2026-11-23: "Quick + daily full
-(Recommended)", "No, quick is enough (Recommended)"; rls-linear `config/quick-landing.json`). The per-project table is
+(Recommended)"). The Swift kit lands on its quick script checks and its full Mac check runs nightly, and its guard
+and rls-gate edits take the quick check too (Michael, 2026-11-23: "Quick + daily full (Recommended)", "No, quick is
+enough (Recommended)"; rls-linear `config/quick-landing.json`). A Swift kit release is cut by that nightly full check
+when it passes on main's head and plugin files differ from `stable`; a push to kit main cuts no release and runs no
+Mac check. A release sooner is one `gh workflow run kit-ci.yml -R RocketLaunchStudio/rls-apple-kit --ref main -f
+suite=full` (Michael, 2026-11-27: "Nightly release"). The per-project table is
 in the draft linked from ROC-4676.
 Quick landing: `rls-linear land` runs the quick check for a repo switched on in rls-linear's
 `config/quick-landing.json` (check files: `config/gate-files.json`), and its dry run and report name the check and why.
@@ -374,8 +377,9 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
   landing is the ending.
 - The ending: the full check runs only there (Michael, 2026-11-25, ROC-5071: "Only at the ending (Recommended)"),
   never after a landing. Nightly, on each quick-landing repo's main, started by the relay, not GitHub's schedule
-  (`rls-linear main-watch <repo>`, which skips a main that has not moved since its last green); before a web or Swift
-  kit release and anything else that reaches clients, crew or the public (a production deploy or promotion, TestFlight
+  (`rls-linear main-watch <repo>`, which skips a main that has not moved since its last green); before a web kit
+  release (the Swift kit releases from its nightly full check, above) and anything else that reaches clients, crew or
+  the public (a production deploy or promotion, TestFlight
   beyond Michael's own group, the App Store, a production migration), green on that exact commit; for a change to how
   the checks run, before it lands; and on request at a project's close (`rls-linear main-watch <repo>` by hand). A red
   one files one issue, or counts on the open one, naming the landings since the last green; it pauses nothing, is
