@@ -568,15 +568,19 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
   could not work out, and a function with no tag is listed but never deployed automatically (portal
   `scripts/deploy/select-functions.mjs`). Until that selector carries ROC-4975 on the portal's main, every Tier C
   function waits for a manual `target=functions` run.
-- The Client Portal Worker goes live a few times a day, not on every merge (Michael, 2026-11-17: "Batch a few times
-  a day (Recommended)", ROC-3800). A green CI run on main deploys changed edge functions as above and
-  uploads the Worker as a version tagged with its commit, not live; the Deploy workflow's schedule (three off-the-hour
-  times a day, which GitHub starts on or after that time) puts the newest upload on main live with `wrangler versions
-  deploy`, or skips when it already is (portal `scripts/deploy/pick-worker-version.mjs`). A fix that cannot wait runs
-  the Deploy workflow by hand: `target=promote` (the newest upload, in seconds) or `target=worker` (build and deploy
-  now). Check production after the promotion that carries your change, not after the merge. A portal migration that
-  removes or renames something waits until the Worker code that stops using it is live (portal
-  `docs/runbooks/github-deploy.md`, "Batched Worker deploys").
+- The Client Portal Worker goes live when no client is using the portal, not on every merge (Michael, 2026-11-28: "if
+  no client is actively using, a deploy is always doable when most opprotune", machine/RULES-HISTORY.md, "2026-11-28,
+  pipeline reset"; it replaces 2026-11-17's "Batch a few times a day (Recommended)", ROC-3800). A green CI run on main
+  deploys changed edge functions as above and uploads the Worker as a version tagged with its commit, not live; the
+  Deploy workflow's 10-minute schedule puts the newest upload on main live with `wrangler versions deploy` once no
+  client session has been seen for 15 minutes (the portal's own activity heartbeat, counts only; staff, demo and test
+  sessions do not count), or, after 12 hours of waiting, in the quietest hour of the last 28 days, and skips when it
+  already is live (portal `scripts/deploy/pick-worker-version.mjs` and `scripts/deploy/deploy-when-idle.mjs`;
+  `target=check` is its dry run). A fix that cannot wait runs the Deploy workflow by hand: `target=promote` (the
+  newest upload, in seconds, no idle check) or `target=worker` (build and deploy now). Check production after the
+  promotion that carries your change, not after the merge. A portal migration that removes or renames something waits
+  until the Worker code that stops using it is live (portal `docs/runbooks/github-deploy.md`, "Batched Worker
+  deploys").
 - Use the `cloudflare` plugin server
   (search, docs, execute, whoami) for the account and Wrangler inside a repo; `rls-linear parity` checks that the plugin
   is on. Do not rely on a claude.ai Cloudflare connector, which belongs to one account. If a session has no `cloudflare`
@@ -588,8 +592,8 @@ repo's AGENTS.md or CLAUDE.md names its commands and lane map.
 ### Merges that deploy
 Moved word for word from machine/CLAUDE.md, "Git: several sessions share each repo" (ROC-3935).
 - A green Risk A or B merge in the portal or website deploys through the repo's own deploy workflow without asking; then
-  check production. The portal's Worker goes live in batches: the merge uploads it and the Deploy workflow's schedule
-  puts it live a few times a day (`rules/deploys.md`).
+  check production. The portal's Worker goes live when no client is on it: the merge uploads it and the Deploy workflow's
+  10-minute check puts it live once the portal is idle (`rules/deploys.md`).
 
 ## Changing the rules: the procedure
 - When Michael changes a rule in chat, write it into its file (plugin, CLAUDE.md or skill) before acting on it, add his
