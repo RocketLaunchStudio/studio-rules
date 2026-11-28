@@ -184,7 +184,12 @@ Where a rule cites `rules/landing.md`, `rules/deploys.md`, `rules/changing-the-r
   with auto-merge for the portal and rls-demo). `--dry-run` shows the decision without pushing. A rebase conflict stops
   it with the branch unchanged, unless the repo's project-map entry names an `onConflict` command (the design system:
   `python3 scripts/ds_register.py regen`, which takes main's copy of generated files, keeps both sides of append-only
-  ledgers and reruns the generators); `land` runs it, continues the rebase, and the result always takes one full check.
+  ledgers and reruns the generators); `land` runs it, continues the rebase, and the result takes one full check, except
+  in the design system. There (Michael, 2026-11-27, ROC-3768: "Yes - no need to over complicate design system changes -
+  it is far too conveluded as is"), a rebase whose only conflicts `regen` settled, or whose only overlap with main is
+  in files the branch also changes, takes the static lane plus each lane the branch's own files reach (main's lane map,
+  `scripts/ci-land-mode.mjs`), with the landing turn still held, in place of a second full check. A change to how the
+  checks run still takes every lane. A site-lane failure this lets through is found by the nightly full check on main.
   Where GitHub requires status checks on main (branch protection or a ruleset), the landed commit needs those checks
   green on it: a clean rebase keeps its pass there only as the next bullet but one says. How `land` takes and lets go of the repo's landing turn, rechecks when main moved, gives up and records its
   timings: `rules/landing-turn.md` (read it when a landing waits for the turn, gives up, rechecks or you land by
